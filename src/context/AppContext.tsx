@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ExpiredDemoModal } from '../components/clients/ExpiredDemoModal';
 import { supabase } from '../services/supabaseClient';
-
-// Compatibility wrapper for insforge.database queries
-const insforge = {
-  database: supabase
-};
+import { insforge } from '../services/insforgeClient';
 import {
   Client,
   License,
