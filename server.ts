@@ -199,7 +199,7 @@ async function startServer() {
         status: license.status,
       },
       enabledModules: license.enabledModuleCodes,
-      redirectUrl: 'https://softwarecompletoelectoral.netlify.app/',
+      redirectUrl: 'https://softwareelectoral.netlify.app/',
     };
 
     return res.json(allowedResponse);
