@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
+import { translateError } from '../../utils/errorTranslator';
 
 interface LoginViewProps {
   onLoginSuccess: (user: { name: string; email: string; role: string }) => void;
@@ -35,7 +36,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     });
 
     if (error) {
-      setErrorMsg(error.message || 'Credenciales incorrectas. Verifica tus datos o crea una cuenta.');
+      setErrorMsg(translateError(error, 'Credenciales incorrectas. Verifica tus datos o crea una cuenta.'));
       setIsLoading(false);
       return;
     }
@@ -60,7 +61,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     });
 
     if (error) {
-      setErrorMsg(error.message || 'Ocurrió un error al iniciar sesión con Google.');
+      setErrorMsg(translateError(error, 'Ocurrió un error al iniciar sesión con Google.'));
       setIsLoading(false);
     }
   };
@@ -94,7 +95,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     });
 
     if (error) {
-      setErrorMsg(error.message || 'Error al registrar el administrador central.');
+      setErrorMsg(translateError(error, 'Error al registrar el administrador central.'));
       setIsLoading(false);
       return;
     }
@@ -109,7 +110,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       });
 
       if (loginError) {
-        setErrorMsg('Cuenta creada, pero ocurrió un error en el inicio de sesión automático. Por favor inicia sesión.');
+        setErrorMsg(translateError(loginError, 'Cuenta creada, pero ocurrió un error en el inicio de sesión automático. Por favor inicia sesión.'));
         setIsLoading(false);
         setMode('login');
         return;
