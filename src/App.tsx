@@ -16,7 +16,7 @@ import { NotificationsView } from './components/notifications/NotificationsView'
 import { SimulatorView } from './components/simulator/SimulatorView';
 import { SettingsView } from './components/settings/SettingsView';
 import { LoginView } from './components/auth/LoginView';
-import { insforge } from './services/insforgeClient';
+import { supabase } from './services/supabaseClient';
 import { ShieldCheck } from 'lucide-react';
 
 const MainLayout: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
@@ -88,8 +88,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial user session from InsForge Auth
-    insforge.auth.getCurrentUser().then(({ data, error }) => {
+    // Check initial user session from Supabase Auth
+    supabase.auth.getUser().then(({ data, error }) => {
       if (data?.user) {
         setUser(data.user);
       }
@@ -100,14 +100,14 @@ export default function App() {
   }, []);
 
   const handleLoginSuccess = (userData: any) => {
-    // Retrieve the user from InsForge Auth to ensure full sync
-    insforge.auth.getCurrentUser().then(({ data }) => {
+    // Retrieve the user from Supabase Auth to ensure full sync
+    supabase.auth.getUser().then(({ data }) => {
       setUser(data?.user || userData);
     });
   };
 
   const handleLogout = async () => {
-    await insforge.auth.signOut();
+    await supabase.auth.signOut();
     setUser(null);
   };
 
@@ -118,7 +118,7 @@ export default function App() {
           <ShieldCheck className="h-9 w-9" />
         </div>
         <p className="text-xs font-bold tracking-widest text-purple-400 uppercase animate-pulse">
-          Validando Sesión en InsForge...
+          Validando Sesión en Supabase...
         </p>
       </div>
     );

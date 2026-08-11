@@ -37,20 +37,20 @@ export const SettingsView: React.FC = () => {
             Parámetros del Panel y Marca White-Label
           </h3>
 
-          {/* InsForge Live DB Badge */}
-          <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 flex items-center justify-between">
+          {/* Supabase Live DB Badge */}
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
               <div>
-                <p className="text-xs font-bold text-slate-900 dark:text-white">Motor de Base de Datos InsForge (Conectado y En Vivo)</p>
-                <p className="text-[10px] text-slate-500 font-mono">Sincronización en tiempo real activa vía @insforge/sdk</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Motor de Base de Datos Supabase (Conectado y En Vivo)</p>
+                <p className="text-[10px] text-slate-500 font-mono">Sincronización en tiempo real activa vía @supabase/supabase-js</p>
               </div>
             </div>
-            <span className="px-2.5 py-1 rounded-lg bg-purple-600 text-white font-mono text-[10px] font-bold">
-              InsForge SDK v1.1
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-mono text-[10px] font-bold">
+              Supabase SDK v2.x
             </span>
           </div>
 

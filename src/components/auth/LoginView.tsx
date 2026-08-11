@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { insforge } from '../../services/insforgeClient';
+import { supabase } from '../../services/supabaseClient';
 
 interface LoginViewProps {
   onLoginSuccess: (user: { name: string; email: string; role: string }) => void;
@@ -29,7 +29,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
     setErrorMsg(null);
 
-    const { data, error } = await insforge.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password: password.trim(),
     });
@@ -42,8 +42,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
     if (data?.user) {
       onLoginSuccess({
-        name: (data.user as any).name || data.user.email.split('@')[0],
-        email: data.user.email,
+        name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || '',
+        email: data.user.email || '',
         role: 'Super Admin',
       });
     }
@@ -52,8 +52,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     setErrorMsg(null);
-    const { error } = await insforge.auth.signInWithOAuth('google', {
-      redirectTo: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
     });
 
     if (error) {
@@ -80,10 +83,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    const { data, error } = await insforge.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: regEmail.trim(),
       password: regPassword.trim(),
-      name: regName.trim(),
+      options: {
+        data: {
+          name: regName.trim(),
+        },
+      },
     });
 
     if (error) {
@@ -96,7 +103,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     
     // Auto sign in
     setTimeout(async () => {
-      const { data: loginData, error: loginError } = await insforge.auth.signInWithPassword({
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
         email: regEmail.trim(),
         password: regPassword.trim(),
       });
@@ -110,8 +117,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
       if (loginData?.user) {
         onLoginSuccess({
-          name: (loginData.user as any).name || loginData.user.email.split('@')[0],
-          email: loginData.user.email,
+          name: loginData.user.user_metadata?.name || loginData.user.email?.split('@')[0] || '',
+          email: loginData.user.email || '',
           role: 'Super Admin',
         });
       }

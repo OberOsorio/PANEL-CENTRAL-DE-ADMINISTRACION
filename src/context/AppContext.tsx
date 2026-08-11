@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ExpiredDemoModal } from '../components/clients/ExpiredDemoModal';
-import { insforge } from '../services/insforgeClient';
+import { supabase } from '../services/supabaseClient';
+
+// Compatibility wrapper for insforge.database queries
+const insforge = {
+  database: supabase
+};
 import {
   Client,
   License,
@@ -245,31 +250,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
     localStorage.setItem('cg_campaigns', JSON.stringify(campaigns));
   }, [campaigns]);
 
-  // Real-time synchronization with InsForge DB
+  // Real-time synchronization with Supabase DB
   useEffect(() => {
     // Check connection and subscribe to live changes
     try {
-      console.log('⚡ Conectando motor en vivo de InsForge DB...');
-      const db = insforge.database as any;
-      const unsubscribeClients = db?.subscribe?.('clients', (payload: any) => {
-        if (payload?.eventType === 'UPDATE' || payload?.eventType === 'INSERT') {
-          setClients((prev) => {
-            const exists = prev.some((c) => c.id === payload.new.id);
-            if (exists) {
-              return prev.map((c) => (c.id === payload.new.id ? { ...c, ...payload.new } : c));
+      console.log('⚡ Conectando motor en vivo de Supabase DB...');
+      const clientsChannel = supabase
+        .channel('public:clients')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'clients' },
+          (payload: any) => {
+            if (payload?.eventType === 'UPDATE' || payload?.eventType === 'INSERT') {
+              setClients((prev) => {
+                const exists = prev.some((c) => c.id === payload.new.id);
+                if (exists) {
+                  return prev.map((c) => (c.id === payload.new.id ? { ...c, ...payload.new } : c));
+                }
+                return [payload.new, ...prev];
+              });
             }
-            return [payload.new, ...prev];
-          });
-        }
-      });
+          }
+        )
+        .subscribe();
 
       return () => {
-        if (typeof unsubscribeClients === 'function') {
-          unsubscribeClients();
-        }
+        supabase.removeChannel(clientsChannel);
       };
     } catch (e) {
-      console.warn('InsForge sync initialized with fallback mode.');
+      console.warn('Supabase sync initialized with fallback mode.');
     }
   }, []);
 
@@ -279,7 +288,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
 
     const fetchAllData = async () => {
       try {
-        console.log('📦 Descargando datos reales de InsForge DB para el usuario:', user.email);
+        console.log('📦 Descargando datos reales de Supabase DB para el usuario:', user.email);
 
         // 1. Clients
         const { data: clientsData } = await insforge.database.from('clients').select('*');
@@ -469,7 +478,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           setNotifications([]);
         }
       } catch (err) {
-        console.error('Error fetching data from InsForge:', err);
+        console.error('Error fetching data from Supabase:', err);
       }
     };
 
