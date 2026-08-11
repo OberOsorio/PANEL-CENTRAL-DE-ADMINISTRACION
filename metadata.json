@@ -1,0 +1,6 @@
+{
+  "name": "Campaña Ganadora AI - Panel Central",
+  "description": "Panel administrativo central SaaS para la gestión de clientes, licencias, suscripciones, usuarios, roles, módulos y control de acceso al Software Electoral.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
