@@ -42,6 +42,119 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Validation errors state
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateStep1 = () => {
+    const errs: Record<string, string> = {};
+    
+    if (!organizationName.trim()) {
+      errs.organizationName = 'El nombre de la organización es obligatorio.';
+    } else if (organizationName.trim().length < 3) {
+      errs.organizationName = 'Debe tener al menos 3 caracteres.';
+    }
+    
+    // Identification / NIT regex allowing numbers, hyphens, dots
+    const nitRegex = /^\d[\d.,-]*\d$/;
+    if (!taxId.trim()) {
+      errs.taxId = 'El Documento de Identificación / NIT es obligatorio.';
+    } else if (taxId.trim().length < 5) {
+      errs.taxId = 'El NIT debe tener al menos 5 caracteres.';
+    } else if (!nitRegex.test(taxId.trim())) {
+      errs.taxId = 'Formato de NIT no válido (solo números, puntos, comas o guiones).';
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      errs.email = 'El correo electrónico institucional es obligatorio.';
+    } else if (!emailRegex.test(email.trim())) {
+      errs.email = 'Formato de correo electrónico no válido.';
+    }
+    
+    // Phone regex
+    const phoneRegex = /^\+?[\d\s-]{7,15}$/;
+    if (!phone.trim()) {
+      errs.phone = 'El teléfono de contacto es obligatorio.';
+    } else if (!phoneRegex.test(phone.trim())) {
+      errs.phone = 'Número de teléfono no válido (7 a 15 dígitos).';
+    }
+    
+    if (!country.trim()) {
+      errs.country = 'El país es obligatorio.';
+    } else if (country.trim().length < 3) {
+      errs.country = 'Nombre de país demasiado corto.';
+    }
+    
+    if (!department.trim()) {
+      errs.department = 'El departamento/estado es obligatorio.';
+    } else if (department.trim().length < 2) {
+      errs.department = 'Nombre de departamento demasiado corto.';
+    }
+    
+    if (!city.trim()) {
+      errs.city = 'El municipio/ciudad es obligatorio.';
+    } else if (city.trim().length < 2) {
+      errs.city = 'Nombre de municipio demasiado corto.';
+    }
+    
+    if (!notes.trim()) {
+      errs.notes = 'Las notas de la organización son obligatorias.';
+    } else if (notes.trim().length < 5) {
+      errs.notes = 'Debe escribir notas descriptivas (mínimo 5 caracteres).';
+    }
+    
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const validateStep2 = () => {
+    const errs: Record<string, string> = {};
+    
+    if (!adminName.trim()) {
+      errs.adminName = 'El nombre completo del responsable es obligatorio.';
+    } else if (adminName.trim().length < 3) {
+      errs.adminName = 'Debe tener al menos 3 caracteres.';
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!adminEmail.trim()) {
+      errs.adminEmail = 'El correo del administrador es obligatorio.';
+    } else if (!emailRegex.test(adminEmail.trim())) {
+      errs.adminEmail = 'Formato de correo electrónico no válido.';
+    }
+    
+    if (!adminPassword) {
+      errs.adminPassword = 'La contraseña es obligatoria.';
+    } else if (adminPassword.length < 8) {
+      errs.adminPassword = 'La contraseña debe tener al menos 8 caracteres.';
+    } else {
+      const hasUpper = /[A-Z]/.test(adminPassword);
+      const hasLower = /[a-z]/.test(adminPassword);
+      const hasDigit = /\d/.test(adminPassword);
+      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(adminPassword);
+      
+      if (!hasUpper || !hasLower || !hasDigit || !hasSpecial) {
+        errs.adminPassword = 'La contraseña debe incluir mayúsculas, minúsculas, números y un carácter especial.';
+      }
+    }
+    
+    if (adminPassword !== confirmPassword) {
+      errs.confirmPassword = 'Las contraseñas no coinciden.';
+    }
+    
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (step === 1) {
+      if (!validateStep1()) return;
+    } else if (step === 2) {
+      if (!validateStep2()) return;
+    }
+    setStep(step + 1);
+  };
+
   // Step 2: Responsible Admin Info & Password
   const [adminName, setAdminName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
@@ -226,9 +339,19 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     required
                     placeholder="Ej. Movimiento Departamental Santander 2026"
                     value={organizationName}
-                    onChange={(e) => setOrganizationName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setOrganizationName(e.target.value);
+                      if (errors.organizationName) setErrors(prev => ({ ...prev, organizationName: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.organizationName
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.organizationName && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.organizationName}</span>
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -239,9 +362,19 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     required
                     placeholder="Ej. 901.882.109-4"
                     value={taxId}
-                    onChange={(e) => setTaxId(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setTaxId(e.target.value);
+                      if (errors.taxId) setErrors(prev => ({ ...prev, taxId: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.taxId
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.taxId && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.taxId}</span>
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -252,62 +385,127 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     required
                     placeholder="contacto@campana.org"
                     value={email}
-                    onChange={(e) => handleOrgEmailChange(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      handleOrgEmailChange(e.target.value);
+                      if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.email
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.email && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.email}</span>
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Teléfono de Contacto
+                    Teléfono de Contacto *
                   </label>
                   <input
                     type="text"
+                    required
                     placeholder="+57 300 000 0000"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (errors.phone) setErrors(prev => ({ ...prev, phone: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.phone
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.phone && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.phone}</span>
+                  )}
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">País</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">País *</label>
                   <input
                     type="text"
+                    required
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setCountry(e.target.value);
+                      if (errors.country) setErrors(prev => ({ ...prev, country: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.country
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.country && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.country}</span>
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Departamento / Estado
+                    Departamento / Estado *
                   </label>
                   <input
                     type="text"
+                    required
                     placeholder="Ej. Cundinamarca / Antioquia"
                     value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setDepartment(e.target.value);
+                      if (errors.department) setErrors(prev => ({ ...prev, department: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.department
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.department && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.department}</span>
+                  )}
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Municipio / Ciudad</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Municipio / Ciudad *</label>
                   <input
                     type="text"
+                    required
                     placeholder="Ej. Bogotá / Medellín"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setCity(e.target.value);
+                      if (errors.city) setErrors(prev => ({ ...prev, city: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.city
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.city && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.city}</span>
+                  )}
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Notas Internas</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Notas Internas *</label>
                   <input
                     type="text"
+                    required
                     placeholder="Detalles sobre el contrato o representante"
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white"
+                    onChange={(e) => {
+                      setNotes(e.target.value);
+                      if (errors.notes) setErrors(prev => ({ ...prev, notes: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.notes
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.notes && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.notes}</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -336,9 +534,19 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     required
                     placeholder="Ej. Carlos Eduardo Mendoza"
                     value={adminName}
-                    onChange={(e) => setAdminName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                    onChange={(e) => {
+                      setAdminName(e.target.value);
+                      if (errors.adminName) setErrors(prev => ({ ...prev, adminName: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.adminName
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.adminName && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.adminName}</span>
+                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -349,9 +557,19 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     required
                     placeholder="admin@campana.org"
                     value={adminEmail}
-                    onChange={(e) => setAdminEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                    onChange={(e) => {
+                      setAdminEmail(e.target.value);
+                      if (errors.adminEmail) setErrors(prev => ({ ...prev, adminEmail: '' }));
+                    }}
+                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                      errors.adminEmail
+                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                    }`}
                   />
+                  {errors.adminEmail && (
+                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.adminEmail}</span>
+                  )}
                 </div>
               </div>
 
@@ -392,10 +610,17 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                       <input
                         type={showPassword ? 'text' : 'password'}
                         required
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Mínimo 8 caracteres"
                         value={adminPassword}
-                        onChange={(e) => setAdminPassword(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 pr-10 text-slate-900 dark:text-white font-mono text-xs focus:ring-2 focus:ring-purple-500"
+                        onChange={(e) => {
+                          setAdminPassword(e.target.value);
+                          if (errors.adminPassword) setErrors(prev => ({ ...prev, adminPassword: '' }));
+                        }}
+                        className={`w-full rounded-xl border bg-white dark:bg-slate-900 p-2.5 pr-10 text-slate-900 dark:text-white font-mono text-xs transition-all ${
+                          errors.adminPassword
+                            ? 'border-red-500 focus:ring-1 focus:ring-red-400'
+                            : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500'
+                        }`}
                       />
                       <button
                         type="button"
@@ -405,6 +630,9 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {errors.adminPassword && (
+                      <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.adminPassword}</span>
+                    )}
                   </div>
 
                   {/* Confirm Password Input */}
@@ -418,8 +646,15 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                         required
                         placeholder="Repite la contraseña"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 pr-10 text-slate-900 dark:text-white font-mono text-xs focus:ring-2 focus:ring-purple-500"
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                        }}
+                        className={`w-full rounded-xl border bg-white dark:bg-slate-900 p-2.5 pr-10 text-slate-900 dark:text-white font-mono text-xs transition-all ${
+                          errors.confirmPassword
+                            ? 'border-red-500 focus:ring-1 focus:ring-red-400'
+                            : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500'
+                        }`}
                       />
                       <button
                         type="button"
@@ -429,6 +664,9 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {errors.confirmPassword && (
+                      <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.confirmPassword}</span>
+                    )}
                   </div>
                 </div>
 
@@ -715,17 +953,8 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
 
           {step < 7 ? (
             <button
-              onClick={() => setStep(step + 1)}
-              disabled={
-                (step === 1 && (!organizationName || !taxId)) ||
-                (step === 2 &&
-                  (!adminName ||
-                    !adminEmail ||
-                    !adminPassword ||
-                    adminPassword !== confirmPassword ||
-                    adminPassword.length < 6))
-              }
-              className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-purple-500 disabled:opacity-50 transition-all shadow-md shadow-purple-600/30"
+              onClick={handleNextStep}
+              className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-purple-500 transition-all shadow-md shadow-purple-600/30"
             >
               Siguiente Paso
               <ArrowRight className="h-4 w-4" />
