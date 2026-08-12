@@ -489,6 +489,16 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   )}
                 </div>
                 <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">País *</label>
+                  <input
+                    type="text"
+                    required
+                    disabled
+                    value={country}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
+                  />
+                </div>
+                <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Aspiración Política *
                   </label>
