@@ -225,72 +225,78 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
           )}
 
           {/* TAB 2: LICENCIA */}
-          {activeTab === 'license' && license && (
+          {activeTab === 'license' && (
             <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 flex items-center justify-between">
-                <div>
-                  <span className="text-purple-700 dark:text-purple-300 font-bold block">Clave de Licencia Generada</span>
-                  <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">{license.licenseKey}</span>
-                </div>
-                <div className="relative inline-block text-left">
-                  <button
-                    onClick={() => setIsRenewOpen(!isRenewOpen)}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-purple-500 shadow transition-all"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    <span>Renovar Licencia</span>
-                    <ChevronDown className="h-3.5 w-3.5 opacity-80" />
-                  </button>
+              {license ? (
+                <>
+                  <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 flex items-center justify-between">
+                    <div>
+                      <span className="text-purple-700 dark:text-purple-300 font-bold block">Clave de Licencia Generada</span>
+                      <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">{license.licenseKey}</span>
+                    </div>
+                    <div className="relative inline-block text-left">
+                      <button
+                        onClick={() => setIsRenewOpen(!isRenewOpen)}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-purple-500 shadow transition-all"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        <span>Renovar Licencia</span>
+                        <ChevronDown className="h-3.5 w-3.5 opacity-80" />
+                      </button>
 
-                  {isRenewOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setIsRenewOpen(false)}
-                      />
-                      <div className="absolute right-0 mt-1.5 w-36 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-xl z-50 animate-in fade-in zoom-in-95">
-                        <div className="px-2 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          Vigencia
-                        </div>
-                        {[3, 6, 9, 12].map((m) => (
-                          <button
-                            key={m}
-                            onClick={() => {
-                              renewLicense(license.id, m);
-                              setIsRenewOpen(false);
-                            }}
-                            className="w-full text-left px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 rounded-lg transition-colors flex items-center justify-between"
-                          >
-                            <span>+{m} meses</span>
-                            <span className="text-[10px] text-slate-400">
-                              {m === 12 ? '1 Año' : `${m}m`}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+                      {isRenewOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setIsRenewOpen(false)}
+                          />
+                          <div className="absolute right-0 mt-1.5 w-36 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-xl z-50 animate-in fade-in zoom-in-95">
+                            <div className="px-2 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                              Vigencia
+                            </div>
+                            {[3, 6, 9, 12].map((m) => (
+                              <button
+                                key={m}
+                                onClick={() => {
+                                  renewLicense(license.id, m);
+                                  setIsRenewOpen(false);
+                                }}
+                                className="w-full text-left px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 rounded-lg transition-colors flex items-center justify-between"
+                              >
+                                <span>+{m} meses</span>
+                                <span className="text-[10px] text-slate-400">
+                                  {m === 12 ? '1 Año' : `${m}m`}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 block mb-1">ID Licencia</span>
-                  <span className="font-bold font-mono">{license.id}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 block mb-1">Tipo de Licencia</span>
-                  <span className="font-bold">{license.licenseType}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 block mb-1">Fecha Activación</span>
-                  <span className="font-bold">{license.activatedAt}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 block mb-1">Fecha Vencimiento</span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400">{license.expiresAt}</span>
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-400 block mb-1">ID Licencia</span>
+                      <span className="font-bold font-mono">{license.id}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-400 block mb-1">Tipo de Licencia</span>
+                      <span className="font-bold">{license.licenseType}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-400 block mb-1">Fecha Activación</span>
+                      <span className="font-bold">{license.activatedAt}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-400 block mb-1">Fecha Vencimiento</span>
+                      <span className="font-bold text-rose-600 dark:text-rose-400">{license.expiresAt}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-slate-400">No se ha encontrado ninguna licencia activa para este cliente.</p>
+              )}
             </div>
           )}
 
@@ -343,99 +349,172 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold">
-                      <th className="py-2.5 px-3">Nombre</th>
-                      <th className="py-2.5 px-3">Correo (Usuario)</th>
-                      <th className="py-2.5 px-3">Contraseña de Acceso</th>
-                      <th className="py-2.5 px-3">Rol</th>
-                      <th className="py-2.5 px-3">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {clientUsers.map((u) => {
-                      const pass = u.password || 'Campaña2026!';
-                      const isVisible = visiblePasswords[u.id] ?? true;
-                      const isCopied = copiedUserId === u.id;
+              {clientUsers.length === 0 ? (
+                <p className="text-slate-400">No hay usuarios registrados para este cliente.</p>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold">
+                        <th className="py-2.5 px-3">Nombre</th>
+                        <th className="py-2.5 px-3">Correo (Usuario)</th>
+                        <th className="py-2.5 px-3">Contraseña de Acceso</th>
+                        <th className="py-2.5 px-3">Rol</th>
+                        <th className="py-2.5 px-3">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {clientUsers.map((u) => {
+                        const pass = u.password || 'Campaña2026!';
+                        const isVisible = visiblePasswords[u.id] ?? true;
+                        const isCopied = copiedUserId === u.id;
 
-                      return (
-                        <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                          <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">
-                            {u.firstName} {u.lastName}
-                          </td>
-                          <td className="py-3 px-3 text-slate-500 font-medium">{u.email}</td>
-                          <td className="py-3 px-3">
-                            <div className="inline-flex items-center gap-1.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/80 px-2.5 py-1 rounded-lg">
-                              <Lock className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-                              <span className="font-mono text-xs font-black text-purple-900 dark:text-purple-200">
-                                {isVisible ? pass : '••••••••••••'}
+                        return (
+                          <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                            <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                              {u.firstName} {u.lastName}
+                            </td>
+                            <td className="py-3 px-3 text-slate-500 font-medium">{u.email}</td>
+                            <td className="py-3 px-3">
+                              <div className="inline-flex items-center gap-1.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/80 px-2.5 py-1 rounded-lg">
+                                <Lock className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                                <span className="font-mono text-xs font-black text-purple-900 dark:text-purple-200">
+                                  {isVisible ? pass : '••••••••••••'}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => togglePasswordVisibility(u.id)}
+                                  className="text-purple-400 hover:text-purple-700 dark:hover:text-purple-200 ml-1"
+                                  title={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                >
+                                  {isVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyPassword(u.id, pass)}
+                                  className="text-purple-500 hover:text-purple-800 dark:hover:text-purple-200"
+                                  title="Copiar contraseña"
+                                >
+                                  {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 font-bold text-purple-600 dark:text-purple-400">{u.roleName}</td>
+                            <td className="py-3 px-3">
+                              <span className="rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 font-bold text-[10px]">
+                                {u.status}
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => togglePasswordVisibility(u.id)}
-                                className="text-purple-400 hover:text-purple-700 dark:hover:text-purple-200 ml-1"
-                                title={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-                              >
-                                {isVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyPassword(u.id, pass)}
-                                className="text-purple-500 hover:text-purple-800 dark:hover:text-purple-200"
-                                title="Copiar contraseña"
-                              >
-                                {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                              </button>
-                            </div>
-                          </td>
-                          <td className="py-3 px-3 font-bold text-purple-600 dark:text-purple-400">{u.roleName}</td>
-                          <td className="py-3 px-3">
-                            <span className="rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 font-bold text-[10px]">
-                              {u.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: CAMPAÑAS */}
+          {activeTab === 'campaigns' && (
+            <div className="space-y-4 text-xs">
+              {clientCampaigns.length === 0 ? (
+                <p className="text-slate-400">No hay campañas registradas para este cliente.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {clientCampaigns.map((c) => (
+                    <div key={c.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-900 dark:text-white">{c.name}</span>
+                        <span className="rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 px-2 py-0.5 font-bold text-[10px]">
+                          {c.electionType}
+                        </span>
+                      </div>
+                      <p className="text-slate-500">Ubicación: {c.city ? `${c.city}, ` : ''}{c.department}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* TAB 6: MÓDULOS */}
-          {activeTab === 'modules' && license && (
+          {activeTab === 'modules' && (
             <div className="space-y-4 text-xs">
-              <p className="text-slate-500">
-                Selecciona los módulos a los que esta organización tendrá acceso directo en el software electoral:
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {modules.map((m) => {
-                  const isEnabled = license.enabledModuleCodes.includes(m.code);
-                  return (
-                    <div
-                      key={m.id}
-                      onClick={() => handleToggleModule(m.code)}
-                      className={`cursor-pointer rounded-xl p-3 border text-xs flex items-center justify-between transition-all ${
-                        isEnabled
-                          ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200 font-bold'
-                          : 'border-slate-200 dark:border-slate-800 text-slate-400'
-                      }`}
-                    >
-                      <span>{m.name}</span>
-                      <div
-                        className={`h-4 w-4 rounded flex items-center justify-center border ${
-                          isEnabled ? 'bg-purple-600 border-purple-600 text-white' : 'border-slate-300'
-                        }`}
-                      >
-                        {isEnabled && <Check className="h-3 w-3" />}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              {license ? (
+                <>
+                  <p className="text-slate-500">
+                    Selecciona los módulos a los que esta organización tendrá acceso directo en el software electoral:
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {modules.map((m) => {
+                      const isEnabled = license.enabledModuleCodes.includes(m.code);
+                      return (
+                        <div
+                          key={m.id}
+                          onClick={() => handleToggleModule(m.code)}
+                          className={`cursor-pointer rounded-xl p-3 border text-xs flex items-center justify-between transition-all ${
+                            isEnabled
+                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200 font-bold'
+                              : 'border-slate-200 dark:border-slate-800 text-slate-400'
+                          }`}
+                        >
+                          <span>{m.name}</span>
+                          <div
+                            className={`h-4 w-4 rounded flex items-center justify-center border ${
+                              isEnabled ? 'bg-purple-600 border-purple-600 text-white' : 'border-slate-300'
+                            }`}
+                          >
+                            {isEnabled && <Check className="h-3 w-3" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <p className="text-slate-400">No se pueden configurar módulos sin una licencia activa.</p>
+              )}
+            </div>
+          )}
+
+          {/* TAB 7: PAGOS */}
+          {activeTab === 'payments' && (
+            <div className="space-y-4 text-xs">
+              {clientInvoices.length === 0 ? (
+                <p className="text-slate-400">No hay transacciones o facturas registradas para este cliente.</p>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold">
+                        <th className="py-2.5 px-3">ID Factura</th>
+                        <th className="py-2.5 px-3">Fecha</th>
+                        <th className="py-2.5 px-3">Monto</th>
+                        <th className="py-2.5 px-3">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {clientInvoices.map((i) => (
+                        <tr key={i.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{i.id}</td>
+                          <td className="py-3 px-3 text-slate-500">{i.date}</td>
+                          <td className="py-3 px-3 font-bold">${i.amount} {i.currency || 'USD'}</td>
+                          <td className="py-3 px-3">
+                            <span className={`rounded px-2 py-0.5 font-bold text-[10px] ${
+                              i.status === 'Pagada'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                            }`}>
+                              {i.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
