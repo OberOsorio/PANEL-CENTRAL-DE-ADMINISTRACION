@@ -406,7 +406,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     placeholder="Ej. Carlos Eduardo Mendoza"
                     value={organizationName}
                     onChange={(e) => {
-                      handleOrgNameChange(e.target.value);
+                      setOrganizationName(e.target.value);
                       if (errors.organizationName) setErrors(prev => ({ ...prev, organizationName: '' }));
                     }}
                     className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
