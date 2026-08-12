@@ -585,34 +585,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Nombre Completo del Responsable *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    disabled
-                    placeholder="Ej. Carlos Eduardo Mendoza"
-                    value={adminName}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Correo del Administrador (Usuario de Acceso) *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    disabled
-                    placeholder="admin@campana.org"
-                    value={adminEmail}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
-                  />
-                </div>
-              </div>
 
               {/* Password Creation Section Card */}
               <div className="rounded-2xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 p-4 space-y-3">
