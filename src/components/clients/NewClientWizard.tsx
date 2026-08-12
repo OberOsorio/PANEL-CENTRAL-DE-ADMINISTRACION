@@ -352,7 +352,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-6xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-8"
+        className="relative w-full max-w-6xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-4"
       >
         <button
           onClick={onClose}
@@ -398,7 +398,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
         </div>
 
         {/* Wizard Step Content Body */}
-        <div className="p-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 max-h-[82vh] overflow-y-auto">
           {/* PASO 1: Información de la organización */}
           {step === 1 && (
             <div className="space-y-4">
