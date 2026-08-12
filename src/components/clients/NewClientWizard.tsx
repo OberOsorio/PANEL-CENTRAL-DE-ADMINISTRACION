@@ -145,11 +145,16 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   // Validation errors state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleOrgNameChange = (val: string) => {
+    setOrganizationName(val);
+    if (!adminName) setAdminName(val);
+  };
+
   const validateStep1 = () => {
     const errs: Record<string, string> = {};
     
     if (!organizationName.trim()) {
-      errs.organizationName = 'El nombre de la organización es obligatorio.';
+      errs.organizationName = 'El nombre completo del responsable es obligatorio.';
     } else if (organizationName.trim().length < 3) {
       errs.organizationName = 'Debe tener al menos 3 caracteres.';
     }
@@ -157,16 +162,16 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     // Identification / NIT regex allowing numbers, hyphens, dots
     const nitRegex = /^\d[\d.,-]*\d$/;
     if (!taxId.trim()) {
-      errs.taxId = 'El Documento de Identificación / NIT es obligatorio.';
+      errs.taxId = 'El número de cédula es obligatorio.';
     } else if (taxId.trim().length < 5) {
-      errs.taxId = 'El NIT debe tener al menos 5 caracteres.';
+      errs.taxId = 'La cédula debe tener al menos 5 caracteres.';
     } else if (!nitRegex.test(taxId.trim())) {
-      errs.taxId = 'Formato de NIT no válido (solo números, puntos, comas o guiones).';
+      errs.taxId = 'Formato de cédula no válido (solo números, puntos, comas o guiones).';
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
-      errs.email = 'El correo electrónico institucional es obligatorio.';
+      errs.email = 'El correo del administrador es obligatorio.';
     } else if (!emailRegex.test(email.trim())) {
       errs.email = 'Formato de correo electrónico no válido.';
     }
@@ -419,15 +424,15 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Nombre de la Organización *
+                    Nombre Completo del Responsable *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Movimiento Departamental Santander 2026"
+                    placeholder="Ej. Carlos Eduardo Mendoza"
                     value={organizationName}
                     onChange={(e) => {
-                      setOrganizationName(e.target.value);
+                      handleOrgNameChange(e.target.value);
                       if (errors.organizationName) setErrors(prev => ({ ...prev, organizationName: '' }));
                     }}
                     className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
@@ -442,12 +447,12 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Documento de Identificación / NIT *
+                    Número de Cédula *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. 901.882.109-4"
+                    placeholder="Ej. 1.098.765.432"
                     value={taxId}
                     onChange={(e) => {
                       setTaxId(e.target.value);
@@ -465,12 +470,12 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Correo Electrónico Institucional *
+                    Correo del Administrador (Usuario de Acceso) *
                   </label>
                   <input
                     type="email"
                     required
-                    placeholder="contacto@campana.org"
+                    placeholder="admin@campana.org"
                     value={email}
                     onChange={(e) => {
                       handleOrgEmailChange(e.target.value);
@@ -606,7 +611,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 </p>
               </div>
 
-              {/* Admin basic data */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -615,21 +619,11 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   <input
                     type="text"
                     required
+                    disabled
                     placeholder="Ej. Carlos Eduardo Mendoza"
                     value={adminName}
-                    onChange={(e) => {
-                      setAdminName(e.target.value);
-                      if (errors.adminName) setErrors(prev => ({ ...prev, adminName: '' }));
-                    }}
-                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
-                      errors.adminName
-                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
-                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-                    }`}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
                   />
-                  {errors.adminName && (
-                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.adminName}</span>
-                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -638,21 +632,11 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   <input
                     type="email"
                     required
+                    disabled
                     placeholder="admin@campana.org"
                     value={adminEmail}
-                    onChange={(e) => {
-                      setAdminEmail(e.target.value);
-                      if (errors.adminEmail) setErrors(prev => ({ ...prev, adminEmail: '' }));
-                    }}
-                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
-                      errors.adminEmail
-                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
-                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-                    }`}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
                   />
-                  {errors.adminEmail && (
-                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.adminEmail}</span>
-                  )}
                 </div>
               </div>
 
