@@ -455,16 +455,7 @@ export const ClientsView: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block font-bold mb-1">País</label>
-                <input
-                  type="text"
-                  required
-                  disabled
-                  value={editCountry}
-                  className="w-full rounded-xl border p-2.5 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
-                />
-              </div>
+
 
               <div>
                 <label className="block font-bold mb-1">Aspiración Política</label>

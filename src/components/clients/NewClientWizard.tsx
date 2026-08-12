@@ -145,11 +145,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   // Validation errors state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleOrgNameChange = (val: string) => {
-    setOrganizationName(val);
-    if (!adminName) setAdminName(val);
-  };
-
   const validateStep1 = () => {
     const errs: Record<string, string> = {};
     
@@ -217,19 +212,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   const validateStep2 = () => {
     const errs: Record<string, string> = {};
     
-    if (!adminName.trim()) {
-      errs.adminName = 'El nombre completo del responsable es obligatorio.';
-    } else if (adminName.trim().length < 3) {
-      errs.adminName = 'Debe tener al menos 3 caracteres.';
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!adminEmail.trim()) {
-      errs.adminEmail = 'El correo del administrador es obligatorio.';
-    } else if (!emailRegex.test(adminEmail.trim())) {
-      errs.adminEmail = 'Formato de correo electrónico no válido.';
-    }
-    
     if (!adminPassword) {
       errs.adminPassword = 'La contraseña es obligatoria.';
     } else if (adminPassword.length < 8) {
@@ -263,8 +245,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   };
 
   // Step 2: Responsible Admin Info & Password
-  const [adminName, setAdminName] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('Campaña2026!');
   const [confirmPassword, setConfirmPassword] = useState('Campaña2026!');
   const [showPassword, setShowPassword] = useState(false);
@@ -296,12 +276,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[1];
   const [enabledModules, setEnabledModules] = useState<string[]>(selectedPlan.allowedModuleCodes);
 
-  // Sync admin email when org email changes if empty
-  const handleOrgEmailChange = (val: string) => {
-    setEmail(val);
-    if (!adminEmail) setAdminEmail(val);
-  };
-
   if (!isOpen) return null;
 
   const handleToggleModule = (code: string) => {
@@ -327,7 +301,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     addClientWithLicense(
       {
         organizationName,
-        responsibleName: adminName || 'Administrador',
+        responsibleName: organizationName || 'Administrador',
         taxId,
         email,
         phone,
@@ -342,8 +316,8 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
       },
       durationMonths,
       enabledModules,
-      adminEmail || email,
-      adminName || 'Admin',
+      email,
+      organizationName || 'Admin',
       licenseType,
       demoDurationDays,
       adminPassword
@@ -478,7 +452,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     placeholder="admin@campana.org"
                     value={email}
                     onChange={(e) => {
-                      handleOrgEmailChange(e.target.value);
+                      setEmail(e.target.value);
                       if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
                     }}
                     className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
@@ -513,16 +487,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   {errors.phone && (
                     <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.phone}</span>
                   )}
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">País *</label>
-                  <input
-                    type="text"
-                    required
-                    disabled
-                    value={country}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
-                  />
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
