@@ -88,15 +88,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial user session from Supabase Auth
-    supabase.auth.getUser().then(({ data, error }) => {
-      if (data?.user) {
-        setUser(data.user);
-      }
+    // For security, sign out immediately on page load/reload
+    const clearSession = async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {}
+      setUser(null);
       setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-    });
+    };
+    clearSession();
   }, []);
 
   const handleLoginSuccess = (userData: any) => {
