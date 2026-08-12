@@ -514,20 +514,10 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   <input
                     type="text"
                     required
+                    disabled
                     value={country}
-                    onChange={(e) => {
-                      setCountry(e.target.value);
-                      if (errors.country) setErrors(prev => ({ ...prev, country: '' }));
-                    }}
-                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
-                      errors.country
-                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
-                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-                    }`}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
                   />
-                  {errors.country && (
-                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.country}</span>
-                  )}
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">

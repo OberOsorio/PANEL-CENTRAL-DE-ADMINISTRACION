@@ -460,9 +460,9 @@ export const ClientsView: React.FC = () => {
                 <input
                   type="text"
                   required
+                  disabled
                   value={editCountry}
-                  onChange={(e) => setEditCountry(e.target.value)}
-                  className="w-full rounded-xl border p-2.5 bg-slate-50 dark:bg-slate-800"
+                  className="w-full rounded-xl border p-2.5 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-75"
                 />
               </div>
 
