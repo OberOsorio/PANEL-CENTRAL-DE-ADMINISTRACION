@@ -164,7 +164,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
             <div className="space-y-6 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-400 block mb-1">NIT / Documento</span>
+                  <span className="text-slate-400 block mb-1">Número de Cédula</span>
                   <span className="font-bold text-slate-900 dark:text-white">{client.taxId}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">

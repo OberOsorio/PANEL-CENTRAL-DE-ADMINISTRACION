@@ -938,8 +938,8 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Correo del Administrador:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{email || 'N/A'}</span>
+                  <span className="text-slate-500">Correo del Administrador (Usuario de Acceso):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{email}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Contraseña de Acceso:</span>

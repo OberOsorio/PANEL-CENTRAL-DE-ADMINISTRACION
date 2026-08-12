@@ -174,7 +174,7 @@ export const ClientsView: React.FC = () => {
     updateClient(selectedClientToEdit.id, {
       organizationName: editOrgName,
       taxId: editTaxId,
-      responsibleName: editResponsibleName,
+      responsibleName: editOrgName,
       email: editEmail,
       phone: editPhone,
       country: editCountry,
@@ -262,8 +262,8 @@ export const ClientsView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 font-bold uppercase tracking-wider">
-                <th className="py-3 px-4">Organización / NIT</th>
-                <th className="py-3 px-4">Responsable</th>
+                <th className="py-3 px-4">Responsable / Cédula</th>
+                <th className="py-3 px-4">Contacto</th>
                 <th className="py-3 px-4">Plan</th>
                 <th className="py-3 px-4">Estado</th>
                 <th className="py-3 px-4">Ubicación</th>
@@ -286,12 +286,12 @@ export const ClientsView: React.FC = () => {
                         {client.organizationName}
                       </div>
                       <div className="text-[10px] text-slate-400 font-mono">
-                        {client.id} • NIT: {client.taxId}
+                        {client.id} • Cédula: {client.taxId}
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">{client.responsibleName}</div>
-                      <div className="text-[10px] text-slate-400">{client.email}</div>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200">{client.email}</div>
+                      <div className="text-[10px] text-slate-400">{client.phone}</div>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="font-bold text-purple-600 dark:text-purple-400">{client.planName}</span>
@@ -388,7 +388,7 @@ export const ClientsView: React.FC = () => {
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Modificar Datos del Cliente (Organización)
+                Modificar Datos del Cliente
               </h3>
               <button
                 type="button"
@@ -401,7 +401,7 @@ export const ClientsView: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="block font-bold mb-1">Nombre de Organización</label>
+                <label className="block font-bold mb-1">Nombre Completo del Responsable</label>
                 <input
                   type="text"
                   required
@@ -412,7 +412,7 @@ export const ClientsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold mb-1">NIT / Tax ID</label>
+                <label className="block font-bold mb-1">Número de Cédula</label>
                 <input
                   type="text"
                   required
@@ -423,18 +423,7 @@ export const ClientsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold mb-1">Nombre del Responsable</label>
-                <input
-                  type="text"
-                  required
-                  value={editResponsibleName}
-                  onChange={(e) => setEditResponsibleName(e.target.value)}
-                  className="w-full rounded-xl border p-2.5 bg-slate-50 dark:bg-slate-800"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold mb-1">Correo Electrónico</label>
+                <label className="block font-bold mb-1">Correo del Administrador (Usuario de Acceso)</label>
                 <input
                   type="email"
                   required
