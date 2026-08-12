@@ -916,11 +916,11 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
 
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-800/50 space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Organización:</span>
+                  <span className="text-slate-500">Nombre Completo del Responsable:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{organizationName || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">NIT / Documento:</span>
+                  <span className="text-slate-500">Número de Cédula:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{taxId || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
@@ -938,8 +938,8 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Administrador:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{organizationName} ({email})</span>
+                  <span className="text-slate-500">Correo del Administrador:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{email || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Contraseña de Acceso:</span>
