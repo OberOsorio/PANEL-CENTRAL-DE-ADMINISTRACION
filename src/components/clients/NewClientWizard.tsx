@@ -58,7 +58,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(true)}
         className={`w-full flex items-center justify-between rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all text-left focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${
           error ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
         }`}
@@ -66,23 +66,34 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         <span className={value ? 'text-slate-900 dark:text-white' : 'text-slate-400'}>
           {value || placeholder}
         </span>
-        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className="h-4 w-4 text-slate-400" />
       </button>
 
       {isOpen && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 right-0 mt-1.5 z-20 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden max-h-56 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] z-10 animate-in zoom-in-95 duration-150">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">{label.replace(' *', '')}</h3>
+              <button 
+                type="button" 
+                onClick={() => setIsOpen(false)} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800">
               <input
                 type="text"
+                autoFocus
                 placeholder="Buscar..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1 p-2">
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((opt) => (
                   <button
@@ -93,22 +104,22 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                       setIsOpen(false);
                       setSearch('');
                     }}
-                    className={`w-full text-left p-2.5 text-xs hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center justify-between ${
-                      value === opt ? 'bg-purple-50/50 dark:bg-purple-950/20 text-purple-600 font-bold' : 'text-slate-700 dark:text-slate-300'
+                    className={`w-full text-left p-3 text-xs rounded-xl hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-all flex items-center justify-between mb-1 ${
+                      value === opt ? 'bg-purple-50/60 dark:bg-purple-950/30 text-purple-600 font-bold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <span>{opt}</span>
-                    {value === opt && <Check className="h-3.5 w-3.5 text-purple-600" />}
+                    {value === opt && <Check className="h-4 w-4 text-purple-600" />}
                   </button>
                 ))
               ) : (
-                <div className="p-3 text-center text-[10px] text-slate-400">
-                  No se encontraron resultados
+                <div className="p-8 text-center text-xs text-slate-400">
+                  No se encontraron resultados para "{search}"
                 </div>
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
       {error && <span className="text-red-500 text-[10px] mt-1 block font-medium">{error}</span>}
     </div>
