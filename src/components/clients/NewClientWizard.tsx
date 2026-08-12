@@ -20,12 +20,100 @@ import {
   EyeOff,
   RefreshCw,
   ShieldCheck,
+  ChevronDown,
 } from 'lucide-react';
+import { COLOMBIA_DEPARTMENTS } from '../../data/colombiaData';
 
 interface NewClientWizardProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+interface SearchableDropdownProps {
+  label: string;
+  placeholder: string;
+  options: string[];
+  value: string;
+  onChange: (val: string) => void;
+  error?: string;
+}
+
+const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
+  label,
+  placeholder,
+  options,
+  value,
+  onChange,
+  error,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  
+  const filteredOptions = options.filter(opt =>
+    opt.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative text-xs">
+      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all text-left focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${
+          error ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
+        }`}
+      >
+        <span className={value ? 'text-slate-900 dark:text-white' : 'text-slate-400'}>
+          {value || placeholder}
+        </span>
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute left-0 right-0 mt-1.5 z-20 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden max-h-56 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+            </div>
+            <div className="overflow-y-auto flex-1">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setIsOpen(false);
+                      setSearch('');
+                    }}
+                    className={`w-full text-left p-2.5 text-xs hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center justify-between ${
+                      value === opt ? 'bg-purple-50/50 dark:bg-purple-950/20 text-purple-600 font-bold' : 'text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <span>{opt}</span>
+                    {value === opt && <Check className="h-3.5 w-3.5 text-purple-600" />}
+                  </button>
+                ))
+              ) : (
+                <div className="p-3 text-center text-[10px] text-slate-400">
+                  No se encontraron resultados
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+      {error && <span className="text-red-500 text-[10px] mt-1 block font-medium">{error}</span>}
+    </div>
+  );
+};
 
 export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClose }) => {
   const { plans, modules, addClientWithLicense } = useApp();
@@ -452,51 +540,33 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     <option value="Concejo">Concejo</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Departamento / Estado *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej. Cundinamarca / Antioquia"
-                    value={department}
-                    onChange={(e) => {
-                      setDepartment(e.target.value);
-                      if (errors.department) setErrors(prev => ({ ...prev, department: '' }));
-                    }}
-                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
-                      errors.department
-                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
-                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-                    }`}
-                  />
-                  {errors.department && (
-                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.department}</span>
-                  )}
-                </div>
+                <SearchableDropdown
+                  label="Departamento / Estado *"
+                  placeholder="Selecciona un departamento"
+                  options={COLOMBIA_DEPARTMENTS.map((d) => d.name)}
+                  value={department}
+                  onChange={(val) => {
+                    setDepartment(val);
+                    setCity('');
+                    if (errors.department) setErrors((prev) => ({ ...prev, department: '' }));
+                    if (errors.city) setErrors((prev) => ({ ...prev, city: '' }));
+                  }}
+                  error={errors.department}
+                />
                 {(aspiration === 'Alcaldía' || aspiration === 'Concejo') && (
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Municipio / Ciudad *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ej. Bogotá / Medellín"
-                      value={city}
-                      onChange={(e) => {
-                        setCity(e.target.value);
-                        if (errors.city) setErrors(prev => ({ ...prev, city: '' }));
-                      }}
-                      className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
-                        errors.city
-                          ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
-                          : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-                      }`}
-                    />
-                    {errors.city && (
-                      <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.city}</span>
-                    )}
-                  </div>
+                  <SearchableDropdown
+                    label="Municipio / Ciudad *"
+                    placeholder={department ? "Selecciona un municipio" : "Selecciona primero un departamento"}
+                    options={
+                      COLOMBIA_DEPARTMENTS.find((d) => d.name === department)?.municipalities || []
+                    }
+                    value={city}
+                    onChange={(val) => {
+                      setCity(val);
+                      if (errors.city) setErrors((prev) => ({ ...prev, city: '' }));
+                    }}
+                    error={errors.city}
+                  />
                 )}
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Notas Internas *</label>
