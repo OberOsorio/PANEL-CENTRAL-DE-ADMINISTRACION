@@ -306,8 +306,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
             activeUsersCount: c.active_users_count || 0,
             maxUsersAllowed: c.max_users_allowed || 0,
             activeCampaignsCount: c.active_campaigns_count || 0,
-            notes: c.notes,
-            logoUrl: c.logo_url
+                        notes: c.notes,
+            logoUrl: c.logo_url,
+            aspiration: c.aspiration
           }));
           setClients(mappedClients);
         } else {
@@ -648,7 +649,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
       clientId,
       clientName: clientData.organizationName,
       name: `Campaña Principal - ${clientData.organizationName}`,
-      electionType: 'Alcaldía',
+      electionType: clientData.aspiration || 'Alcaldía',
       candidateName: adminUserName,
       territory: clientData.city || clientData.department || 'Colombia',
       startDate: createdAt,
@@ -686,6 +687,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           active_campaigns_count: newClient.activeCampaignsCount,
           notes: newClient.notes || null,
           logo_url: newClient.logoUrl || null,
+          aspiration: newClient.aspiration || null,
           user_id: user.id
         }])
       ).catch((err: any) => console.error('Error writing client to InsForge:', err));
@@ -820,6 +822,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
       if (data.planName !== undefined) updateData.plan_name = data.planName;
       if (data.notes !== undefined) updateData.notes = data.notes;
       if (data.logoUrl !== undefined) updateData.logo_url = data.logoUrl;
+      if (data.aspiration !== undefined) updateData.aspiration = data.aspiration;
 
       Promise.resolve(
         insforge.database.from('clients').update(updateData).eq('id', id)

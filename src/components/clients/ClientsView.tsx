@@ -41,6 +41,7 @@ export const ClientsView: React.FC = () => {
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editCountry, setEditCountry] = useState('Colombia');
+  const [editAspiration, setEditAspiration] = useState<'Gobernación' | 'Asamblea' | 'Alcaldía' | 'Concejo'>('Alcaldía');
   const [editDepartment, setEditDepartment] = useState('');
   const [editCity, setEditCity] = useState('');
   const [editPlanId, setEditPlanId] = useState('');
@@ -55,6 +56,7 @@ export const ClientsView: React.FC = () => {
     setEditEmail(client.email);
     setEditPhone(client.phone);
     setEditCountry(client.country);
+    setEditAspiration(client.aspiration || 'Alcaldía');
     setEditDepartment(client.department);
     setEditCity(client.city);
     setEditPlanId(client.planId);
@@ -77,7 +79,8 @@ export const ClientsView: React.FC = () => {
       phone: editPhone,
       country: editCountry,
       department: editDepartment,
-      city: editCity,
+      city: (editAspiration === 'Gobernación' || editAspiration === 'Asamblea') ? '' : editCity,
+      aspiration: editAspiration,
       planId: editPlanId,
       planName: plan ? plan.name : selectedClientToEdit.planName,
       status: editStatus,
@@ -363,19 +366,40 @@ export const ClientsView: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block font-bold mb-1">Aspiración Política</label>
+                <select
+                  value={editAspiration}
+                  onChange={(e) => {
+                    const val = e.target.value as any;
+                    setEditAspiration(val);
+                    if (val === 'Gobernación' || val === 'Asamblea') {
+                      setEditCity('');
+                    }
+                  }}
+                  className="w-full rounded-xl border p-2.5 bg-slate-50 dark:bg-slate-800"
+                >
+                  <option value="Gobernación">Gobernación</option>
+                  <option value="Asamblea">Asamblea</option>
+                  <option value="Alcaldía">Alcaldía</option>
+                  <option value="Concejo">Concejo</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">Departamento / Estado</label>
+                <input
+                  type="text"
+                  required
+                  value={editDepartment}
+                  onChange={(e) => setEditDepartment(e.target.value)}
+                  className="w-full rounded-xl border p-2.5 bg-slate-50 dark:bg-slate-800"
+                />
+              </div>
+
+              {(editAspiration === 'Alcaldía' || editAspiration === 'Concejo') ? (
                 <div>
-                  <label className="block font-bold mb-1">Dpto.</label>
-                  <input
-                    type="text"
-                    required
-                    value={editDepartment}
-                    onChange={(e) => setEditDepartment(e.target.value)}
-                    className="w-full rounded-xl border p-2.5 bg-slate-50 dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold mb-1">Ciudad</label>
+                  <label className="block font-bold mb-1">Municipio / Ciudad</label>
                   <input
                     type="text"
                     required
@@ -384,7 +408,9 @@ export const ClientsView: React.FC = () => {
                     className="w-full rounded-xl border p-2.5 bg-slate-50 dark:bg-slate-800"
                   />
                 </div>
-              </div>
+              ) : (
+                <div />
+              )}
 
               <div>
                 <label className="block font-bold mb-1">Plan Comercial Asignado</label>

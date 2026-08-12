@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS clients (
     active_campaigns_count INTEGER DEFAULT 0,
     notes TEXT,
     logo_url TEXT,
+    aspiration TEXT,
     user_id UUID NOT NULL DEFAULT auth.uid()
 );
 

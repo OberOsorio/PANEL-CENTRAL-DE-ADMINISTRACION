@@ -168,9 +168,13 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
                   <span className="font-bold text-slate-900 dark:text-white">{client.taxId}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-400 block mb-1">Aspiración Política</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{client.aspiration || 'No definida'}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                   <span className="text-slate-400 block mb-1">Ubicación</span>
                   <span className="font-bold text-slate-900 dark:text-white">
-                    {client.city}, {client.department} ({client.country})
+                    {client.city ? `${client.city}, ` : ''}{client.department} ({client.country})
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">

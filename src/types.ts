@@ -54,6 +54,7 @@ export interface Client {
   activeCampaignsCount: number;
   notes?: string;
   logoUrl?: string;
+  aspiration?: 'Gobernación' | 'Asamblea' | 'Alcaldía' | 'Concejo';
 }
 
 export interface License {
@@ -135,7 +136,7 @@ export interface Campaign {
   clientName: string;
   name: string;
   candidateName: string;
-  electionType: 'Presidencial' | 'Gobernación' | 'Alcaldía' | 'Senado' | 'Cámara' | 'Concejo';
+  electionType: 'Presidencial' | 'Gobernación' | 'Alcaldía' | 'Senado' | 'Cámara' | 'Concejo' | 'Asamblea';
   territory: string;
   startDate: string;
   electionDate: string;

@@ -36,6 +36,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   const [organizationName, setOrganizationName] = useState('');
   const [taxId, setTaxId] = useState('');
   const [country, setCountry] = useState('Colombia');
+  const [aspiration, setAspiration] = useState<'Gobernación' | 'Asamblea' | 'Alcaldía' | 'Concejo'>('Alcaldía');
   const [department, setDepartment] = useState('');
   const [city, setCity] = useState('');
   const [phone, setPhone] = useState('');
@@ -91,10 +92,12 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
       errs.department = 'Nombre de departamento demasiado corto.';
     }
     
-    if (!city.trim()) {
-      errs.city = 'El municipio/ciudad es obligatorio.';
-    } else if (city.trim().length < 2) {
-      errs.city = 'Nombre de municipio demasiado corto.';
+    if (aspiration === 'Alcaldía' || aspiration === 'Concejo') {
+      if (!city.trim()) {
+        errs.city = 'El municipio/ciudad es obligatorio.';
+      } else if (city.trim().length < 2) {
+        errs.city = 'Nombre de municipio demasiado corto.';
+      }
     }
     
     if (!notes.trim()) {
@@ -226,7 +229,8 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
         phone,
         country,
         department,
-        city,
+        city: (aspiration === 'Gobernación' || aspiration === 'Asamblea') ? '' : city,
+        aspiration,
         planId: selectedPlan.id,
         planName: selectedPlan.name,
         maxUsersAllowed: selectedPlan.maxUsers,
@@ -444,6 +448,28 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Aspiración Política *
+                  </label>
+                  <select
+                    value={aspiration}
+                    onChange={(e) => {
+                      const val = e.target.value as any;
+                      setAspiration(val);
+                      if (val === 'Gobernación' || val === 'Asamblea') {
+                        setCity('');
+                      }
+                      if (errors.city) setErrors(prev => ({ ...prev, city: '' }));
+                    }}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="Gobernación">Gobernación</option>
+                    <option value="Asamblea">Asamblea</option>
+                    <option value="Alcaldía">Alcaldía</option>
+                    <option value="Concejo">Concejo</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Departamento / Estado *
                   </label>
                   <input
@@ -465,27 +491,29 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.department}</span>
                   )}
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Municipio / Ciudad *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej. Bogotá / Medellín"
-                    value={city}
-                    onChange={(e) => {
-                      setCity(e.target.value);
-                      if (errors.city) setErrors(prev => ({ ...prev, city: '' }));
-                    }}
-                    className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
-                      errors.city
-                        ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
-                        : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-                    }`}
-                  />
-                  {errors.city && (
-                    <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.city}</span>
-                  )}
-                </div>
+                {(aspiration === 'Alcaldía' || aspiration === 'Concejo') && (
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Municipio / Ciudad *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej. Bogotá / Medellín"
+                      value={city}
+                      onChange={(e) => {
+                        setCity(e.target.value);
+                        if (errors.city) setErrors(prev => ({ ...prev, city: '' }));
+                      }}
+                      className={`w-full rounded-xl border bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white transition-all ${
+                        errors.city
+                          ? 'border-red-500 focus:ring-1 focus:ring-red-400 focus:border-red-500'
+                          : 'border-slate-200 dark:border-slate-700 focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
+                      }`}
+                    />
+                    {errors.city && (
+                      <span className="text-red-500 text-[10px] mt-1 block font-medium">{errors.city}</span>
+                    )}
+                  </div>
+                )}
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Notas Internas *</label>
                   <input
@@ -910,6 +938,20 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                   <span className="text-slate-500">NIT / Documento:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{taxId || 'N/A'}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Aspiración Política:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{aspiration}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Departamento:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{department || 'N/A'}</span>
+                </div>
+                {(aspiration === 'Alcaldía' || aspiration === 'Concejo') && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Municipio:</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{city || 'N/A'}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-slate-500">Administrador:</span>
                   <span className="font-bold text-slate-900 dark:text-white">{adminName} ({adminEmail})</span>
