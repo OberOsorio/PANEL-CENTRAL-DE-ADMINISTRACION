@@ -528,7 +528,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
     }
   };
 
-  const addClientWithLicense = (
+  const addClientWithLicense = async (
     clientData: Omit<Client, 'id' | 'createdAt' | 'status' | 'activeUsersCount' | 'activeCampaignsCount'>,
     durationMonths: number,
     enabledModules: string[],
@@ -667,8 +667,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
     setCampaigns((prev) => [newCampaign, ...prev]);
 
     if (user) {
-      Promise.resolve(
-        insforge.database.from('clients').insert([{
+      try {
+        let authUserId = user.id; // fallback to admin user ID
+
+        // Call our RPC function to securely create the auth user
+        const { data: rpcData, error: rpcError } = await insforge.rpc('create_client_auth_user', {
+          p_email: newAdminUser.email,
+          p_password: newAdminUser.password,
+          p_first_name: newAdminUser.firstName,
+          p_last_name: newAdminUser.lastName,
+          p_client_id: newAdminUser.clientId
+        });
+
+        if (rpcError) {
+          console.error('Error creating auth user via RPC:', rpcError);
+        } else if (rpcData) {
+          authUserId = rpcData; // Use the returned UUID
+        }
+
+        await insforge.database.from('clients').insert([{
           id: newClient.id,
           organization_name: newClient.organizationName,
           responsible_name: newClient.responsibleName,
@@ -688,12 +705,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           notes: newClient.notes || null,
           logo_url: newClient.logoUrl || null,
           aspiration: newClient.aspiration || null,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing client to InsForge:', err));
+          user_id: authUserId
+        }]);
 
-      Promise.resolve(
-        insforge.database.from('licenses').insert([{
+        await insforge.database.from('licenses').insert([{
           id: newLicense.id,
           client_id: newLicense.clientId,
           client_name: newLicense.clientName,
@@ -712,12 +727,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           enabled_module_codes: newLicense.enabledModuleCodes,
           license_key: newLicense.licenseKey,
           auto_renew: newLicense.autoRenew,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing license to InsForge:', err));
+          user_id: authUserId
+        }]);
 
-      Promise.resolve(
-        insforge.database.from('subscriptions').insert([{
+        await insforge.database.from('subscriptions').insert([{
           id: newSub.id,
           client_id: newSub.clientId,
           client_name: newSub.clientName,
@@ -731,12 +744,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           expiration_date: newSub.expirationDate,
           status: newSub.status,
           payment_method: newSub.paymentMethod || null,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing subscription to InsForge:', err));
+          user_id: authUserId
+        }]);
 
-      Promise.resolve(
-        insforge.database.from('users_list').insert([{
+        await insforge.database.from('users_list').insert([{
           id: newAdminUser.id,
           first_name: newAdminUser.firstName,
           last_name: newAdminUser.lastName,
@@ -753,12 +764,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           created_at: newAdminUser.createdAt,
           ip_address: newAdminUser.ipAddress || null,
           avatar_url: newAdminUser.avatarUrl || null,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing user_list to InsForge:', err));
+          user_id: authUserId
+        }]);
 
-      Promise.resolve(
-        insforge.database.from('invoices').insert([{
+        await insforge.database.from('invoices').insert([{
           id: newInvoice.id,
           client_id: newInvoice.clientId,
           client_name: newInvoice.clientName,
@@ -770,12 +779,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           due_date: newInvoice.dueDate,
           paid_at: newInvoice.paidAt || null,
           status: newInvoice.status,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing invoice to InsForge:', err));
+          user_id: authUserId
+        }]);
 
-      Promise.resolve(
-        insforge.database.from('campaigns').insert([{
+        await insforge.database.from('campaigns').insert([{
           id: newCampaign.id,
           client_id: newCampaign.clientId,
           client_name: newCampaign.clientName,
@@ -786,9 +793,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           start_date: newCampaign.startDate,
           election_date: newCampaign.electionDate,
           status: newCampaign.status,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing campaign to InsForge:', err));
+          user_id: authUserId
+        }]);
+      } catch (err: any) {
+        console.error('Error in database insertions:', err);
+      }
     }
 
     addAuditLog(
