@@ -611,15 +611,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
     const firstName = nameParts[0] || 'Admin';
     const lastName = nameParts.slice(1).join(' ') || clientData.organizationName;
 
+    const newCampaign: Campaign = {
+      id: `CMP-2026-${Math.floor(100 + Math.random() * 900)}`,
+      clientId,
+      clientName: clientData.organizationName,
+      name: `Campaña Principal - ${clientData.organizationName}`,
+      electionType: clientData.aspiration || 'Alcaldía',
+      candidateName: adminUserName,
+      territory: clientData.city || clientData.department || 'Colombia',
+      startDate: createdAt,
+      electionDate: expiresAt,
+      status: 'En Ejecución',
+      registeredVotersTarget: 50000,
+      registeredVotersCurrent: 0,
+    };
+
     const newAdminUser: User = {
       id: `usr-${Date.now()}`,
       firstName,
       lastName,
-      email: adminUserEmail,
+      email: adminUserEmail.trim().toLowerCase(),
       password: adminPassword || 'Campaña2026!',
       phone: clientData.phone,
       clientId,
       clientName: clientData.organizationName,
+      campaignId: newCampaign.id,
+      campaignName: newCampaign.name,
       roleId: 'role-clientadmin',
       roleName: 'Administrador del Cliente',
       status: 'Activo',
@@ -644,21 +661,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
       paidAt: createdAt,
     };
 
-    const newCampaign: Campaign = {
-      id: `CMP-2026-${Math.floor(100 + Math.random() * 900)}`,
-      clientId,
-      clientName: clientData.organizationName,
-      name: `Campaña Principal - ${clientData.organizationName}`,
-      electionType: clientData.aspiration || 'Alcaldía',
-      candidateName: adminUserName,
-      territory: clientData.city || clientData.department || 'Colombia',
-      startDate: createdAt,
-      electionDate: expiresAt,
-      status: 'En Ejecución',
-      registeredVotersTarget: 50000,
-      registeredVotersCurrent: 0,
-    };
-
     setClients((prev) => [newClient, ...prev]);
     setLicenses((prev) => [newLicense, ...prev]);
     setSubscriptions((prev) => [newSub, ...prev]);
@@ -666,11 +668,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
     setInvoices((prev) => [newInvoice, ...prev]);
     setCampaigns((prev) => [newCampaign, ...prev]);
 
-    if (user) {
-      try {
-        let authUserId = user.id; // fallback to admin user ID
+    try {
+      let authUserId = user?.id || newAdminUser.id; // fallback to admin user ID
 
-        // Call our RPC function to securely create the auth user
+      // Call our RPC function to securely create the auth user if available
+      try {
         const { data: rpcData, error: rpcError } = await insforge.rpc('create_client_auth_user', {
           p_email: newAdminUser.email,
           p_password: newAdminUser.password,
@@ -679,125 +681,125 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           p_client_id: newAdminUser.clientId
         });
 
-        if (rpcError) {
-          console.error('Error creating auth user via RPC:', rpcError);
-        } else if (rpcData) {
+        if (!rpcError && rpcData) {
           authUserId = rpcData; // Use the returned UUID
         }
-
-        await insforge.database.from('clients').insert([{
-          id: newClient.id,
-          organization_name: newClient.organizationName,
-          responsible_name: newClient.responsibleName,
-          tax_id: newClient.taxId,
-          email: newClient.email,
-          phone: newClient.phone,
-          country: newClient.country,
-          department: newClient.department,
-          city: newClient.city,
-          created_at: newClient.createdAt,
-          status: newClient.status,
-          plan_id: newClient.planId,
-          plan_name: newClient.planName,
-          active_users_count: newClient.activeUsersCount,
-          max_users_allowed: newClient.maxUsersAllowed,
-          active_campaigns_count: newClient.activeCampaignsCount,
-          notes: newClient.notes || null,
-          logo_url: newClient.logoUrl || null,
-          aspiration: newClient.aspiration || null,
-          user_id: authUserId
-        }]);
-
-        await insforge.database.from('licenses').insert([{
-          id: newLicense.id,
-          client_id: newLicense.clientId,
-          client_name: newLicense.clientName,
-          plan_id: newLicense.planId,
-          plan_name: newLicense.planName,
-          created_at: newLicense.createdAt,
-          activated_at: newLicense.activatedAt,
-          expires_at: newLicense.expiresAt,
-          status: newLicense.status,
-          license_type: newLicense.licenseType,
-          max_users: newLicense.maxUsers,
-          used_users: newLicense.usedUsers,
-          max_campaigns: newLicense.maxCampaigns,
-          used_campaigns: newLicense.usedCampaigns,
-          max_storage_gb: newLicense.maxStorageGB,
-          enabled_module_codes: newLicense.enabledModuleCodes,
-          license_key: newLicense.licenseKey,
-          auto_renew: newLicense.autoRenew,
-          user_id: authUserId
-        }]);
-
-        await insforge.database.from('subscriptions').insert([{
-          id: newSub.id,
-          client_id: newSub.clientId,
-          client_name: newSub.clientName,
-          plan_id: newSub.planId,
-          plan_name: newSub.planName,
-          price: newSub.price,
-          currency: newSub.currency,
-          periodicity: newSub.periodicity,
-          start_date: newSub.startDate,
-          next_billing_date: newSub.nextBillingDate,
-          expiration_date: newSub.expirationDate,
-          status: newSub.status,
-          payment_method: newSub.paymentMethod || null,
-          user_id: authUserId
-        }]);
-
-        await insforge.database.from('users_list').insert([{
-          id: newAdminUser.id,
-          first_name: newAdminUser.firstName,
-          last_name: newAdminUser.lastName,
-          email: adminUserEmail.trim().toLowerCase(),
-          phone: newAdminUser.phone || null,
-          client_id: newAdminUser.clientId,
-          client_name: newAdminUser.clientName,
-          campaign_id: newAdminUser.campaignId || null,
-          campaign_name: newAdminUser.campaignName || null,
-          role_id: newAdminUser.roleId,
-          role_name: newAdminUser.roleName,
-          status: newAdminUser.status,
-          last_access_at: newAdminUser.lastAccessAt,
-          created_at: newAdminUser.createdAt,
-          ip_address: newAdminUser.ipAddress || null,
-          avatar_url: newAdminUser.avatarUrl || null,
-          user_id: authUserId
-        }]);
-
-        await insforge.database.from('invoices').insert([{
-          id: newInvoice.id,
-          client_id: newInvoice.clientId,
-          client_name: newInvoice.clientName,
-          invoice_number: newInvoice.id,
-          plan_name: plan.name,
-          total_amount: newInvoice.totalAmount,
-          currency: newSub.currency,
-          issue_date: newInvoice.issueDate,
-          due_date: newInvoice.dueDate,
-          paid_at: newInvoice.paidAt || null,
-          status: newInvoice.status,
-          user_id: authUserId
-        }]);
-
-        await insforge.database.from('campaigns').insert([{
-          id: newCampaign.id,
-          client_id: newCampaign.clientId,
-          client_name: newCampaign.clientName,
-          name: newCampaign.name,
-          candidate_name: newCampaign.candidateName,
-          election_type: newCampaign.electionType,
-          territory: newCampaign.territory,
-          start_date: newCampaign.startDate,
-          election_date: newCampaign.electionDate,
-          status: newCampaign.status,
-          user_id: authUserId
-        }]);
-      } catch (err: any) {
-        console.error('Error in database insertions:', err);
+      } catch (e) {
+        console.warn('RPC create_client_auth_user not available or failed, proceeding with direct DB creation:', e);
       }
+
+      await insforge.database.from('clients').insert([{
+        id: newClient.id,
+        organization_name: newClient.organizationName,
+        responsible_name: newClient.responsibleName,
+        tax_id: newClient.taxId,
+        email: newClient.email,
+        phone: newClient.phone,
+        country: newClient.country,
+        department: newClient.department,
+        city: newClient.city,
+        created_at: newClient.createdAt,
+        status: newClient.status,
+        plan_id: newClient.planId,
+        plan_name: newClient.planName,
+        active_users_count: newClient.activeUsersCount,
+        max_users_allowed: newClient.maxUsersAllowed,
+        active_campaigns_count: newClient.activeCampaignsCount,
+        notes: newClient.notes || null,
+        logo_url: newClient.logoUrl || null,
+        aspiration: newClient.aspiration || null,
+        user_id: authUserId
+      }]);
+
+      await insforge.database.from('licenses').insert([{
+        id: newLicense.id,
+        client_id: newLicense.clientId,
+        client_name: newLicense.clientName,
+        plan_id: newLicense.planId,
+        plan_name: newLicense.planName,
+        created_at: newLicense.createdAt,
+        activated_at: newLicense.activatedAt,
+        expires_at: newLicense.expiresAt,
+        status: newLicense.status,
+        license_type: newLicense.licenseType,
+        max_users: newLicense.maxUsers,
+        used_users: newLicense.usedUsers,
+        max_campaigns: newLicense.maxCampaigns,
+        used_campaigns: newLicense.usedCampaigns,
+        max_storage_gb: newLicense.maxStorageGB,
+        enabled_module_codes: newLicense.enabledModuleCodes,
+        license_key: newLicense.licenseKey,
+        auto_renew: newLicense.autoRenew,
+        user_id: authUserId
+      }]);
+
+      await insforge.database.from('subscriptions').insert([{
+        id: newSub.id,
+        client_id: newSub.clientId,
+        client_name: newSub.clientName,
+        plan_id: newSub.planId,
+        plan_name: newSub.planName,
+        price: newSub.price,
+        currency: newSub.currency,
+        periodicity: newSub.periodicity,
+        start_date: newSub.startDate,
+        next_billing_date: newSub.nextBillingDate,
+        expiration_date: newSub.expirationDate,
+        status: newSub.status,
+        payment_method: newSub.paymentMethod || null,
+        user_id: authUserId
+      }]);
+
+      await insforge.database.from('users_list').insert([{
+        id: newAdminUser.id,
+        first_name: newAdminUser.firstName,
+        last_name: newAdminUser.lastName,
+        email: adminUserEmail.trim().toLowerCase(),
+        phone: newAdminUser.phone || null,
+        client_id: newAdminUser.clientId,
+        client_name: newAdminUser.clientName,
+        campaign_id: newAdminUser.campaignId || null,
+        campaign_name: newAdminUser.campaignName || null,
+        role_id: newAdminUser.roleId,
+        role_name: newAdminUser.roleName,
+        status: newAdminUser.status,
+        last_access_at: newAdminUser.lastAccessAt,
+        created_at: newAdminUser.createdAt,
+        ip_address: newAdminUser.ipAddress || null,
+        avatar_url: newAdminUser.avatarUrl || null,
+        user_id: authUserId
+      }]);
+
+      await insforge.database.from('invoices').insert([{
+        id: newInvoice.id,
+        client_id: newInvoice.clientId,
+        client_name: newInvoice.clientName,
+        invoice_number: newInvoice.id,
+        plan_name: plan.name,
+        total_amount: newInvoice.totalAmount,
+        currency: newSub.currency,
+        issue_date: newInvoice.issueDate,
+        due_date: newInvoice.dueDate,
+        paid_at: newInvoice.paidAt || null,
+        status: newInvoice.status,
+        user_id: authUserId
+      }]);
+
+      await insforge.database.from('campaigns').insert([{
+        id: newCampaign.id,
+        client_id: newCampaign.clientId,
+        client_name: newCampaign.clientName,
+        name: newCampaign.name,
+        candidate_name: newCampaign.candidateName,
+        election_type: newCampaign.electionType,
+        territory: newCampaign.territory,
+        start_date: newCampaign.startDate,
+        election_date: newCampaign.electionDate,
+        status: newCampaign.status,
+        user_id: authUserId
+      }]);
+    } catch (err: any) {
+      console.error('Error in database insertions:', err);
     }
 
     addAuditLog(
