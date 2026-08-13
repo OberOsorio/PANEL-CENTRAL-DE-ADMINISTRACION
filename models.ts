@@ -25,207 +25,246 @@ export async function connectDB(uri: string): Promise<boolean> {
   }
 }
 
-// Native SHA-256 Hashing helper
 export function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
 // Client Schema
 const ClientSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  organizationName: { type: String, required: true },
-  responsibleName: { type: String, required: true },
-  taxId: { type: String, required: true },
-  email: { type: String, required: true },
-  phone: { type: String, required: true },
-  country: { type: String, required: true },
-  department: { type: String, required: true },
-  city: { type: String, required: true },
-  createdAt: { type: String, required: true },
-  status: { type: String, required: true },
-  planId: { type: String, required: true },
-  planName: { type: String, required: true },
+  id: { type: String, required: true },
+  organizationName: { type: String },
+  organization_name: { type: String },
+  responsibleName: { type: String },
+  responsible_name: { type: String },
+  taxId: { type: String },
+  tax_id: { type: String },
+  email: { type: String },
+  phone: { type: String },
+  country: { type: String },
+  department: { type: String },
+  city: { type: String },
+  createdAt: { type: String },
+  created_at: { type: String },
+  status: { type: String },
+  planId: { type: String },
+  plan_id: { type: String },
+  planName: { type: String },
+  plan_name: { type: String },
   activeUsersCount: { type: Number, default: 0 },
   maxUsersAllowed: { type: Number, default: 0 },
   activeCampaignsCount: { type: Number, default: 0 },
   notes: { type: String },
   logoUrl: { type: String },
   aspiration: { type: String }
-});
+}, { strict: false });
 
 // License Schema
 const LicenseSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  clientId: { type: String, required: true },
-  clientName: { type: String, required: true },
-  planId: { type: String, required: true },
-  planName: { type: String, required: true },
-  createdAt: { type: String, required: true },
-  activatedAt: { type: String, required: true },
-  expiresAt: { type: String, required: true },
-  status: { type: String, required: true },
-  licenseType: { type: String, required: true },
+  id: { type: String, required: true },
+  clientId: { type: String },
+  client_id: { type: String },
+  clientName: { type: String },
+  client_name: { type: String },
+  planId: { type: String },
+  plan_id: { type: String },
+  planName: { type: String },
+  plan_name: { type: String },
+  createdAt: { type: String },
+  created_at: { type: String },
+  activatedAt: { type: String },
+  activated_at: { type: String },
+  expiresAt: { type: String },
+  expires_at: { type: String },
+  status: { type: String },
+  licenseType: { type: String },
+  license_type: { type: String },
   maxUsers: { type: Number, default: 0 },
   usedUsers: { type: Number, default: 0 },
   maxCampaigns: { type: Number, default: 0 },
   usedCampaigns: { type: Number, default: 0 },
   maxStorageGB: { type: Number, default: 0 },
   enabledModuleCodes: { type: [String], default: [] },
-  licenseKey: { type: String, required: true },
+  licenseKey: { type: String },
+  license_key: { type: String },
   autoRenew: { type: Boolean, default: false }
-});
+}, { strict: false });
 
 // Subscription Schema
 const SubscriptionSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  clientId: { type: String, required: true },
-  clientName: { type: String, required: true },
-  planId: { type: String, required: true },
-  planName: { type: String, required: true },
-  price: { type: Number, required: true },
-  currency: { type: String, required: true },
-  periodicity: { type: String, required: true },
-  startDate: { type: String, required: true },
-  nextBillingDate: { type: String, required: true },
-  expirationDate: { type: String, required: true },
-  status: { type: String, required: true },
+  id: { type: String, required: true },
+  clientId: { type: String },
+  client_id: { type: String },
+  clientName: { type: String },
+  client_name: { type: String },
+  planId: { type: String },
+  plan_id: { type: String },
+  planName: { type: String },
+  plan_name: { type: String },
+  price: { type: Number },
+  currency: { type: String },
+  periodicity: { type: String },
+  startDate: { type: String },
+  start_date: { type: String },
+  nextBillingDate: { type: String },
+  next_billing_date: { type: String },
+  expirationDate: { type: String },
+  expiration_date: { type: String },
+  status: { type: String },
   paymentMethod: { type: String }
-});
+}, { strict: false });
 
 // User Schema
 const UserSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  id: { type: String, required: true },
+  firstName: { type: String },
+  first_name: { type: String },
+  lastName: { type: String },
+  last_name: { type: String },
+  email: { type: String },
   password: { type: String },
   phone: { type: String },
-  clientId: { type: String, required: true },
-  clientName: { type: String, required: true },
+  clientId: { type: String },
+  client_id: { type: String },
+  clientName: { type: String },
+  client_name: { type: String },
   campaignId: { type: String },
+  campaign_id: { type: String },
   campaignName: { type: String },
-  roleId: { type: String, required: true },
-  roleName: { type: String, required: true },
-  status: { type: String, required: true },
-  lastAccessAt: { type: String, required: true },
-  createdAt: { type: String, required: true },
+  campaign_name: { type: String },
+  roleId: { type: String },
+  role_id: { type: String },
+  roleName: { type: String },
+  role_name: { type: String },
+  status: { type: String },
+  lastAccessAt: { type: String },
+  last_access_at: { type: String },
+  createdAt: { type: String },
+  created_at: { type: String },
   ipAddress: { type: String },
   avatarUrl: { type: String }
-});
+}, { strict: false });
 
 // Campaign Schema
 const CampaignSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  clientId: { type: String, required: true },
-  clientName: { type: String, required: true },
-  name: { type: String, required: true },
-  candidateName: { type: String, required: true },
-  electionType: { type: String, required: true },
-  territory: { type: String, required: true },
-  startDate: { type: String, required: true },
-  electionDate: { type: String, required: true },
-  status: { type: String, required: true },
+  id: { type: String, required: true },
+  clientId: { type: String },
+  client_id: { type: String },
+  clientName: { type: String },
+  client_name: { type: String },
+  name: { type: String },
+  candidateName: { type: String },
+  candidate_name: { type: String },
+  electionType: { type: String },
+  election_type: { type: String },
+  territory: { type: String },
+  startDate: { type: String },
+  start_date: { type: String },
+  electionDate: { type: String },
+  election_date: { type: String },
+  status: { type: String },
   budget: { type: Number, default: 0 },
   spent: { type: Number, default: 0 },
   logoUrl: { type: String }
-});
+}, { strict: false });
 
 // Invoice Schema
 const InvoiceSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  clientId: { type: String, required: true },
-  clientName: { type: String, required: true },
-  invoiceNumber: { type: String, required: true },
-  planName: { type: String, required: true },
-  totalAmount: { type: Number, required: true },
-  currency: { type: String, required: true },
-  issueDate: { type: String, required: true },
-  dueDate: { type: String, required: true },
+  id: { type: String, required: true },
+  clientId: { type: String },
+  client_id: { type: String },
+  clientName: { type: String },
+  client_name: { type: String },
+  invoiceNumber: { type: String },
+  planName: { type: String },
+  totalAmount: { type: Number },
+  currency: { type: String },
+  issueDate: { type: String },
+  dueDate: { type: String },
   paidAt: { type: String },
-  status: { type: String, required: true }
-});
+  status: { type: String }
+}, { strict: false });
 
 // AuditLog Schema
 const AuditLogSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  timestamp: { type: String, required: true },
-  userId: { type: String, required: true },
-  userName: { type: String, required: true },
-  userEmail: { type: String, required: true },
+  id: { type: String, required: true },
+  timestamp: { type: String },
+  userId: { type: String },
+  userName: { type: String },
+  userEmail: { type: String },
   clientId: { type: String },
   clientName: { type: String },
-  action: { type: String, required: true },
-  category: { type: String, required: true },
-  details: { type: String, required: true },
+  action: { type: String },
+  category: { type: String },
+  details: { type: String },
   ipAddress: { type: String },
-  result: { type: String, required: true }
-});
+  result: { type: String }
+}, { strict: false });
 
 // Notification Schema
 const NotificationSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  title: { type: String, required: true },
-  message: { type: String, required: true },
-  type: { type: String, required: true },
-  timestamp: { type: String, required: true },
+  id: { type: String, required: true },
+  title: { type: String },
+  message: { type: String },
+  type: { type: String },
+  timestamp: { type: String },
   read: { type: Boolean, default: false },
   clientId: { type: String }
-});
+}, { strict: false });
 
 // Plan Schema
 const PlanSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  code: { type: String, required: true },
-  description: { type: String, required: true },
-  monthlyPrice: { type: Number, required: true },
-  annualPrice: { type: Number, required: true },
-  maxUsers: { type: Number, required: true },
-  maxCampaigns: { type: Number, required: true },
-  maxStorageGB: { type: Number, required: true },
+  id: { type: String, required: true },
+  name: { type: String },
+  code: { type: String },
+  description: { type: String },
+  monthlyPrice: { type: Number },
+  annualPrice: { type: Number },
+  maxUsers: { type: Number },
+  maxCampaigns: { type: Number },
+  maxStorageGB: { type: Number },
   allowedModuleCodes: { type: [String], default: [] },
-  supportLevel: { type: String, required: true },
+  supportLevel: { type: String },
   hasAiFeatures: { type: Boolean, default: false },
   isPopular: { type: Boolean, default: false },
   features: { type: [String], default: [] }
-});
+}, { strict: false });
 
 // Module Schema
 const ModuleSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  code: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  category: { type: String, required: true },
-  icon: { type: String, required: true },
+  id: { type: String, required: true },
+  code: { type: String },
+  name: { type: String },
+  description: { type: String },
+  category: { type: String },
+  icon: { type: String },
   isRequiredForBasic: { type: Boolean, default: false },
   defaultEnabled: { type: Boolean, default: false }
-});
+}, { strict: false });
 
 // Role Schema
 const RoleSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  code: { type: String, required: true },
-  description: { type: String, required: true },
+  id: { type: String, required: true },
+  name: { type: String },
+  code: { type: String },
+  description: { type: String },
   isSystemRole: { type: Boolean, default: false },
   permissionCodes: { type: [String], default: [] }
-});
+}, { strict: false });
 
 // Session Schema
 const SessionSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  userId: { type: String, required: true },
-  userName: { type: String, required: true },
-  userEmail: { type: String, required: true },
-  clientName: { type: String, required: true },
-  roleName: { type: String, required: true },
-  loginAt: { type: String, required: true },
-  lastActiveAt: { type: String, required: true },
-  ipAddress: { type: String, required: true },
-  device: { type: String, required: true },
-  browser: { type: String, required: true }
-});
+  id: { type: String, required: true },
+  userId: { type: String },
+  userName: { type: String },
+  userEmail: { type: String },
+  clientName: { type: String },
+  roleName: { type: String },
+  loginAt: { type: String },
+  lastActiveAt: { type: String },
+  ipAddress: { type: String },
+  device: { type: String },
+  browser: { type: String }
+}, { strict: false });
 
 export const ClientModel = mongoose.model('Client', ClientSchema);
 export const LicenseModel = mongoose.model('License', LicenseSchema);
