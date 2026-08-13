@@ -355,7 +355,7 @@ async function startServer() {
           status: license.status,
         },
         enabledModules: license.enabledModuleCodes,
-        redirectUrl: 'https://softwareelectoral.netlify.app/',
+        redirectUrl: 'http://localhost:3001/',
       };
 
       return res.json(allowedResponse);
