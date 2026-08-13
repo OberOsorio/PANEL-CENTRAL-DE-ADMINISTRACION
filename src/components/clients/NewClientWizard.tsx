@@ -162,8 +162,9 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   const [demoDurationDays, setDemoDurationDays] = useState<number>(3);
 
   // Step 6: Limits & Modules
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[1];
-  const [enabledModules, setEnabledModules] = useState<string[]>(selectedPlan.allowedModuleCodes);
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[1] || plans[0] || { id: 'plan-pro', name: 'Plan Profesional', maxUsers: 10, allowedModuleCodes: [] };
+  const [enabledModules, setEnabledModules] = useState<string[]>(selectedPlan?.allowedModuleCodes || []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetWizard = useCallback(() => {
     setStep(1);
@@ -185,6 +186,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     setLicenseType('Anual');
     setDurationMonths(12);
     setDemoDurationDays(3);
+    setIsSubmitting(false);
 
     const defaultPlan = plans.find((p) => p.id === 'plan-pro') || plans[1] || plans[0];
     if (defaultPlan) {
@@ -335,6 +337,8 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   };
 
   const handleCompleteWizard = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await addClientWithLicense(
         {
@@ -362,8 +366,11 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
       );
       resetWizard();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error al crear el cliente:', err);
+      alert(`Hubo un error al crear el cliente: ${err?.message || 'Intente nuevamente'}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1031,10 +1038,22 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
           ) : (
             <button
               onClick={handleCompleteWizard}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/30 hover:from-emerald-500 hover:to-teal-500 transition-all"
+              disabled={isSubmitting}
+              className={`inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/30 hover:from-emerald-500 hover:to-teal-500 transition-all ${
+                isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             >
-              Confirmar y Activar Cliente
-              <CheckCircle2 className="h-4 w-4" />
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Guardando y Activando en MongoDB...
+                </>
+              ) : (
+                <>
+                  Confirmar y Activar Cliente
+                  <CheckCircle2 className="h-4 w-4" />
+                </>
+              )}
             </button>
           )}
         </div>
