@@ -1,3 +1,35 @@
+const getApiUrl = (endpoint: string) => {
+  const customUrl = (import.meta as any).env?.VITE_API_URL;
+  if (customUrl) return `${customUrl.replace(/\/$/, '')}/api/${endpoint}`;
+  return `/api/${endpoint}`;
+};
+
+const safeFetch = async (endpoint: string, options?: RequestInit) => {
+  const primaryUrl = getApiUrl(endpoint);
+  try {
+    let res = await fetch(primaryUrl, options);
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || contentType.includes('text/html')) {
+      // Fallback to direct localhost:3000 server port if relative proxy returned non-JSON/404
+      const fallbackUrl = `http://localhost:3000/api/${endpoint}`;
+      if (primaryUrl !== fallbackUrl) {
+        console.warn(`Relative fetch to ${primaryUrl} failed/returned HTML. Attempting fallback to ${fallbackUrl}`);
+        res = await fetch(fallbackUrl, options);
+      }
+    }
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    const fallbackUrl = `http://localhost:3000/api/${endpoint}`;
+    if (primaryUrl !== fallbackUrl) {
+      const res = await fetch(fallbackUrl, options);
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      return await res.json();
+    }
+    throw err;
+  }
+};
+
 // Mock client that redirects database and RPC calls to the Express server API
 export const insforge = {
   database: {
@@ -11,9 +43,7 @@ export const insforge = {
           
           const execute = async () => {
             try {
-              const res = await fetch(`/api/${endpoint}`);
-              if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-              let data = await res.json();
+              let data = await safeFetch(endpoint);
               
               if (Array.isArray(data)) {
                 filters.forEach(f => {
@@ -51,13 +81,11 @@ export const insforge = {
         insert(records: any[]) {
           return (async () => {
             try {
-              const res = await fetch(`/api/${endpoint}`, {
+              const data = await safeFetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(records)
               });
-              if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-              const data = await res.json();
               return { data, error: null };
             } catch (error: any) {
               console.error(`Error in insert for ${table}:`, error);
