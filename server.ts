@@ -65,7 +65,11 @@ function getModelByCollectionName(name: string): any {
 async function startServer() {
   // Connect to MongoDB
   const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campana_ganadora';
-  console.log(`Connecting to MongoDB at: ${mongoUri}`);
+  if (mongoUri.includes('127.0.0.1') || mongoUri.includes('localhost')) {
+    console.warn('⚠️ WARNING: Connecting to local MongoDB. Ensure the MONGODB_URI environment variable is set on the Render dashboard for production.');
+  } else {
+    console.log(`Connecting to MongoDB at: ${mongoUri.replace(/:([^@]+)@/, ':****@')}`); // Hide credentials in log
+  }
   await connectDB(mongoUri);
   await seedDatabase();
 
