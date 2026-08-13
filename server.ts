@@ -24,6 +24,19 @@ import {
 } from './models.js';
 
 import { AccessCheckResult } from './src/types.js';
+import {
+  INITIAL_CLIENTS,
+  INITIAL_LICENSES,
+  INITIAL_SUBSCRIPTIONS,
+  INITIAL_USERS,
+  INITIAL_PLANS,
+  INITIAL_MODULES,
+  INITIAL_ROLES,
+  INITIAL_CAMPAIGNS,
+  INITIAL_INVOICES,
+  INITIAL_AUDIT_LOGS,
+  INITIAL_NOTIFICATIONS,
+} from './src/data/initialData.js';
 
 dotenv.config();
 
@@ -63,6 +76,22 @@ function getModelByCollectionName(name: string): any {
 }
 
 async function startServer() {
+  let isConnected = false;
+  const memoryDb: any = {
+    clients: [...INITIAL_CLIENTS],
+    licenses: [...INITIAL_LICENSES],
+    subscriptions: [...INITIAL_SUBSCRIPTIONS],
+    users: [...INITIAL_USERS],
+    campaigns: [...INITIAL_CAMPAIGNS],
+    invoices: [...INITIAL_INVOICES],
+    audit_logs: [...INITIAL_AUDIT_LOGS],
+    notifications: [...INITIAL_NOTIFICATIONS],
+    plans: [...INITIAL_PLANS],
+    modules: [...INITIAL_MODULES],
+    roles: [...INITIAL_ROLES],
+    sessions: [],
+  };
+
   // Connect to MongoDB
   const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campana_ganadora';
   if (mongoUri.includes('127.0.0.1') || mongoUri.includes('localhost')) {
@@ -70,11 +99,11 @@ async function startServer() {
   } else {
     console.log(`Connecting to MongoDB at: ${mongoUri.replace(/:([^@]+)@/, ':****@')}`); // Hide credentials in log
   }
-  const isConnected = await connectDB(mongoUri);
+  isConnected = await connectDB(mongoUri);
   if (isConnected) {
     await seedDatabase();
   } else {
-    console.warn('⚠️ WARNING: Skipping database seeding because MongoDB connection failed. Database operations will not work until a connection is established.');
+    console.warn('⚠️ WARNING: Skipping database seeding because MongoDB connection failed. Database operations will use in-memory fallback.');
   }
 
   const app = express();
@@ -96,12 +125,15 @@ async function startServer() {
   // Health check
   app.get('/api/health', async (req, res) => {
     try {
-      const activeTenants = await ClientModel.countDocuments({ status: 'Activo' });
+      const activeTenants = isConnected
+        ? await ClientModel.countDocuments({ status: 'Activo' })
+        : (memoryDb.clients || []).filter((x: any) => x.status === 'Activo').length;
       res.json({
         status: 'ok',
         service: 'Campaña Ganadora AI - Panel Central API (MongoDB)',
         timestamp: new Date().toISOString(),
         activeTenants,
+        databaseConnected: isConnected,
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -116,42 +148,71 @@ async function startServer() {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const { email, password, name } = req.body;
-      const existingUser = await UserModel.findOne({ email }).lean();
-      if (existingUser) {
-        return res.status(400).json({ error: 'El usuario ya existe' });
-      }
-      
-      const newUserId = `usr-${Date.now()}`;
       const nameParts = name.split(' ');
       const firstName = nameParts[0] || 'Admin';
       const lastName = nameParts.slice(1).join(' ') || 'CG';
-      
-      const user = await UserModel.create({
-        id: newUserId,
-        firstName,
-        lastName,
-        email,
-        password: hashPassword(password),
-        clientId: 'CLI-GLOBAL',
-        clientName: 'Administración Central',
-        roleId: 'role-super-admin',
-        roleName: 'Super Admin',
-        status: 'Activo',
-        lastAccessAt: new Date().toISOString(),
-        createdAt: new Date().toISOString().split('T')[0]
-      }) as any;
-      
-      // Auto-set cookie
-      res.setHeader('Set-Cookie', `session_token=${user.id}; Path=/; HttpOnly; SameSite=Lax`);
-      
-      res.status(201).json({
-        user: {
-          id: user.id,
-          email: user.email,
-          user_metadata: { name: `${user.firstName} ${user.lastName}` },
-          role: 'Super Admin'
+      const newUserId = `usr-${Date.now()}`;
+
+      if (isConnected) {
+        const existingUser = await UserModel.findOne({ email }).lean();
+        if (existingUser) {
+          return res.status(400).json({ error: 'El usuario ya existe' });
         }
-      });
+        
+        const user = await UserModel.create({
+          id: newUserId,
+          firstName,
+          lastName,
+          email,
+          password: hashPassword(password),
+          clientId: 'CLI-GLOBAL',
+          clientName: 'Administración Central',
+          roleId: 'role-super-admin',
+          roleName: 'Super Admin',
+          status: 'Activo',
+          lastAccessAt: new Date().toISOString(),
+          createdAt: new Date().toISOString().split('T')[0]
+        }) as any;
+        
+        res.setHeader('Set-Cookie', `session_token=${user.id}; Path=/; HttpOnly; SameSite=Lax`);
+        return res.status(201).json({
+          user: {
+            id: user.id,
+            email: user.email,
+            user_metadata: { name: `${user.firstName} ${user.lastName}` },
+            role: 'Super Admin'
+          }
+        });
+      } else {
+        const existingUser = (memoryDb.users || []).find((x: any) => x.email === email);
+        if (existingUser) {
+          return res.status(400).json({ error: 'El usuario ya existe' });
+        }
+        const user = {
+          id: newUserId,
+          firstName,
+          lastName,
+          email,
+          password: hashPassword(password),
+          clientId: 'CLI-GLOBAL',
+          clientName: 'Administración Central',
+          roleId: 'role-super-admin',
+          roleName: 'Super Admin',
+          status: 'Activo',
+          lastAccessAt: new Date().toISOString(),
+          createdAt: new Date().toISOString().split('T')[0]
+        };
+        memoryDb.users.push(user);
+        res.setHeader('Set-Cookie', `session_token=${user.id}; Path=/; HttpOnly; SameSite=Lax`);
+        return res.status(201).json({
+          user: {
+            id: user.id,
+            email: user.email,
+            user_metadata: { name: `${user.firstName} ${user.lastName}` },
+            role: 'Super Admin'
+          }
+        });
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -161,41 +222,67 @@ async function startServer() {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, password, isOAuth } = req.body;
+      let user: any;
       
-      let user: any = await UserModel.findOne({ email }).lean();
-      
-      // For testing/OAuth, auto-create or find the admin user
-      if (isOAuth) {
-        if (!user) {
-          user = await UserModel.create({
-            id: 'usr-admin-master',
-            firstName: 'Super',
-            lastName: 'Admin CG',
-            email: email || 'admin@campanaganadora.ai',
-            password: hashPassword('password'),
-            clientId: 'CLI-GLOBAL',
-            clientName: 'Administración Central',
-            roleId: 'role-super-admin',
-            roleName: 'Super Admin',
-            status: 'Activo',
-            lastAccessAt: new Date().toISOString(),
-            createdAt: new Date().toISOString().split('T')[0]
-          }) as any;
+      if (isConnected) {
+        user = await UserModel.findOne({ email }).lean();
+        if (isOAuth) {
+          if (!user) {
+            user = await UserModel.create({
+              id: 'usr-admin-master',
+              firstName: 'Super',
+              lastName: 'Admin CG',
+              email: email || 'admin@campanaganadora.ai',
+              password: hashPassword('password'),
+              clientId: 'CLI-GLOBAL',
+              clientName: 'Administración Central',
+              roleId: 'role-super-admin',
+              roleName: 'Super Admin',
+              status: 'Activo',
+              lastAccessAt: new Date().toISOString(),
+              createdAt: new Date().toISOString().split('T')[0]
+            }) as any;
+          }
+        } else {
+          if (!user) {
+            return res.status(401).json({ error: 'Credenciales incorrectas. El correo no está registrado.' });
+          }
+          if (user.password !== hashPassword(password)) {
+            return res.status(401).json({ error: 'Credenciales incorrectas. Contraseña inválida.' });
+          }
         }
       } else {
-        if (!user) {
-          return res.status(401).json({ error: 'Credenciales incorrectas. El correo no está registrado.' });
-        }
-        
-        if (user.password !== hashPassword(password)) {
-          return res.status(401).json({ error: 'Credenciales incorrectas. Contraseña inválida.' });
+        user = (memoryDb.users || []).find((x: any) => x.email === email);
+        if (isOAuth) {
+          if (!user) {
+            user = {
+              id: 'usr-admin-master',
+              firstName: 'Super',
+              lastName: 'Admin CG',
+              email: email || 'admin@campanaganadora.ai',
+              password: hashPassword('password'),
+              clientId: 'CLI-GLOBAL',
+              clientName: 'Administración Central',
+              roleId: 'role-super-admin',
+              roleName: 'Super Admin',
+              status: 'Activo',
+              lastAccessAt: new Date().toISOString(),
+              createdAt: new Date().toISOString().split('T')[0]
+            };
+            memoryDb.users.push(user);
+          }
+        } else {
+          if (!user) {
+            return res.status(401).json({ error: 'Credenciales incorrectas. El correo no está registrado.' });
+          }
+          if (user.password !== hashPassword(password)) {
+            return res.status(401).json({ error: 'Credenciales incorrectas. Contraseña inválida.' });
+          }
         }
       }
       
-      // Set session cookie
       res.setHeader('Set-Cookie', `session_token=${user.id}; Path=/; HttpOnly; SameSite=Lax`);
-      
-      res.json({
+      return res.json({
         user: {
           id: user.id,
           email: user.email,
@@ -217,7 +304,13 @@ async function startServer() {
         return res.status(401).json({ error: 'No autenticado' });
       }
       
-      const user: any = await UserModel.findOne({ id: token }).lean();
+      let user: any;
+      if (isConnected) {
+        user = await UserModel.findOne({ id: token }).lean();
+      } else {
+        user = (memoryDb.users || []).find((x: any) => x.id === token);
+      }
+
       if (!user) {
         return res.status(401).json({ error: 'Sesión inválida' });
       }
@@ -245,12 +338,21 @@ async function startServer() {
   app.post('/api/verify-access', async (req, res) => {
     try {
       const { email, clientId, requestedModuleCode } = req.body || {};
+      let client: any;
+      let user: any;
 
-      let client: any = await ClientModel.findOne({ $or: [{ id: clientId }, { email }] }).lean();
-      let user: any = await UserModel.findOne({ $or: [{ email }, { clientId, email }] }).lean();
-
-      if (!client && user) {
-        client = await ClientModel.findOne({ id: user.clientId }).lean() as any;
+      if (isConnected) {
+        client = await ClientModel.findOne({ $or: [{ id: clientId }, { email }] }).lean();
+        user = await UserModel.findOne({ $or: [{ email }, { clientId, email }] }).lean();
+        if (!client && user) {
+          client = await ClientModel.findOne({ id: user.clientId }).lean() as any;
+        }
+      } else {
+        client = (memoryDb.clients || []).find((x: any) => x.id === clientId || x.email === email);
+        user = (memoryDb.users || []).find((x: any) => x.email === email || (x.clientId === clientId && x.email === email));
+        if (!client && user) {
+          client = (memoryDb.clients || []).find((x: any) => x.id === user.clientId);
+        }
       }
 
       if (!client) {
@@ -280,7 +382,12 @@ async function startServer() {
       }
 
       // Find active license
-      const license: any = await LicenseModel.findOne({ clientId: client.id }).lean();
+      let license: any;
+      if (isConnected) {
+        license = await LicenseModel.findOne({ clientId: client.id }).lean();
+      } else {
+        license = (memoryDb.licenses || []).find((x: any) => x.clientId === client.id);
+      }
 
       if (!license) {
         const response: AccessCheckResult = {
@@ -320,7 +427,12 @@ async function startServer() {
 
       // Check module permission if requested
       if (requestedModuleCode && !license.enabledModuleCodes.includes(requestedModuleCode)) {
-        const mod = await ModuleModel.findOne({ code: requestedModuleCode }).lean() as any;
+        let mod: any;
+        if (isConnected) {
+          mod = await ModuleModel.findOne({ code: requestedModuleCode }).lean() as any;
+        } else {
+          mod = (memoryDb.modules || []).find((x: any) => x.code === requestedModuleCode);
+        }
         const response: AccessCheckResult = {
           allowed: false,
           code: 'MODULE_DISABLED',
@@ -374,19 +486,35 @@ async function startServer() {
   // ==========================================
   app.get('/api/stats', async (req, res) => {
     try {
-      const totalClients = await ClientModel.countDocuments();
-      const activeClients = await ClientModel.countDocuments({ status: 'Activo' });
-      const suspendedClients = await ClientModel.countDocuments({ status: 'Suspendido' });
+      let totalClients, activeClients, suspendedClients;
+      let activeLicenses, expiringLicenses, expiredLicenses;
+      let activeSubscriptions, totalUsers, activeUsers;
+      let paidInvoices: any[];
 
-      const activeLicenses = await LicenseModel.countDocuments({ status: 'Activa' });
-      const expiringLicenses = await LicenseModel.countDocuments({ status: 'Próxima a vencer' });
-      const expiredLicenses = await LicenseModel.countDocuments({ status: 'Vencida' });
+      if (isConnected) {
+        totalClients = await ClientModel.countDocuments();
+        activeClients = await ClientModel.countDocuments({ status: 'Activo' });
+        suspendedClients = await ClientModel.countDocuments({ status: 'Suspendido' });
+        activeLicenses = await LicenseModel.countDocuments({ status: 'Activa' });
+        expiringLicenses = await LicenseModel.countDocuments({ status: 'Próxima a vencer' });
+        expiredLicenses = await LicenseModel.countDocuments({ status: 'Vencida' });
+        activeSubscriptions = await SubscriptionModel.countDocuments({ status: 'Activa' });
+        totalUsers = await UserModel.countDocuments();
+        activeUsers = await UserModel.countDocuments({ status: 'Activo' });
+        paidInvoices = await InvoiceModel.find({ status: 'Pagada' }).lean() as any[];
+      } else {
+        totalClients = memoryDb.clients.length;
+        activeClients = memoryDb.clients.filter((x: any) => x.status === 'Activo').length;
+        suspendedClients = memoryDb.clients.filter((x: any) => x.status === 'Suspendido').length;
+        activeLicenses = memoryDb.licenses.filter((x: any) => x.status === 'Activa').length;
+        expiringLicenses = memoryDb.licenses.filter((x: any) => x.status === 'Próxima a vencer').length;
+        expiredLicenses = memoryDb.licenses.filter((x: any) => x.status === 'Vencida').length;
+        activeSubscriptions = memoryDb.subscriptions.filter((x: any) => x.status === 'Activa').length;
+        totalUsers = memoryDb.users.length;
+        activeUsers = memoryDb.users.filter((x: any) => x.status === 'Activo').length;
+        paidInvoices = memoryDb.invoices.filter((x: any) => x.status === 'Pagada');
+      }
 
-      const activeSubscriptions = await SubscriptionModel.countDocuments({ status: 'Activa' });
-      const totalUsers = await UserModel.countDocuments();
-      const activeUsers = await UserModel.countDocuments({ status: 'Activo' });
-
-      const paidInvoices = await InvoiceModel.find({ status: 'Pagada' }).lean() as any[];
       const totalRevenue = paidInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
 
       res.json({
@@ -413,30 +541,53 @@ async function startServer() {
     try {
       const { p_email, p_password, p_first_name, p_last_name, p_client_id } = req.body;
       
-      // Check if user already exists
-      let user: any = await UserModel.findOne({ email: p_email }).lean();
-      if (user) {
-        return res.json(user.id);
+      if (isConnected) {
+        let user: any = await UserModel.findOne({ email: p_email }).lean();
+        if (user) {
+          return res.json(user.id);
+        }
+        
+        const newUserId = `usr-${Date.now()}`;
+        const newUser: any = await UserModel.create({
+          id: newUserId,
+          firstName: p_first_name,
+          lastName: p_last_name,
+          email: p_email,
+          password: hashPassword(p_password || 'password'),
+          clientId: p_client_id,
+          clientName: 'Organización Creada',
+          roleId: 'role-client-admin',
+          roleName: 'Administrador de Campaña',
+          status: 'Activo',
+          lastAccessAt: 'Nunca',
+          createdAt: new Date().toISOString().split('T')[0]
+        });
+        
+        return res.json(newUser.id);
+      } else {
+        let user = (memoryDb.users || []).find((x: any) => x.email === p_email);
+        if (user) {
+          return res.json(user.id);
+        }
+        
+        const newUserId = `usr-${Date.now()}`;
+        const newUser = {
+          id: newUserId,
+          firstName: p_first_name,
+          lastName: p_last_name,
+          email: p_email,
+          password: hashPassword(p_password || 'password'),
+          clientId: p_client_id,
+          clientName: 'Organización Creada',
+          roleId: 'role-client-admin',
+          roleName: 'Administrador de Campaña',
+          status: 'Activo',
+          lastAccessAt: 'Nunca',
+          createdAt: new Date().toISOString().split('T')[0]
+        };
+        memoryDb.users.push(newUser);
+        return res.json(newUser.id);
       }
-      
-      // Create user
-      const newUserId = `usr-${Date.now()}`;
-      const newUser: any = await UserModel.create({
-        id: newUserId,
-        firstName: p_first_name,
-        lastName: p_last_name,
-        email: p_email,
-        password: hashPassword(p_password || 'password'),
-        clientId: p_client_id,
-        clientName: 'Organización Creada',
-        roleId: 'role-client-admin',
-        roleName: 'Administrador de Campaña',
-        status: 'Activo',
-        lastAccessAt: 'Nunca',
-        createdAt: new Date().toISOString().split('T')[0]
-      });
-      
-      res.json(newUser.id);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -450,12 +601,20 @@ async function startServer() {
   app.get('/api/:collection', async (req, res) => {
     try {
       const { collection } = req.params;
-      const model = getModelByCollectionName(collection);
-      
-      // Sort audit logs by timestamp descending
-      const sortQuery = collection === 'audit_logs' ? { timestamp: -1 } : {};
-      const data = await model.find({}).sort(sortQuery as any).lean();
-      res.json(data);
+      const endpoint = collection === 'users_list' ? 'users' : collection;
+
+      if (isConnected) {
+        const model = getModelByCollectionName(collection);
+        const sortQuery = collection === 'audit_logs' ? { timestamp: -1 } : {};
+        const data = await model.find({}).sort(sortQuery as any).lean();
+        return res.json(data);
+      } else {
+        let data = memoryDb[endpoint] || [];
+        if (collection === 'audit_logs') {
+          data = [...data].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        }
+        return res.json(data);
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -465,48 +624,70 @@ async function startServer() {
   app.post('/api/:collection', async (req, res) => {
     try {
       const { collection } = req.params;
-      const model = getModelByCollectionName(collection);
-      
       const body = req.body;
-      let data;
-      
-      // Create appropriate id if missing and it's single object insert
-      if (!Array.isArray(body)) {
-        if (!body.id) {
-          if (collection === 'clients') {
-            body.id = `CLI-2026-${Math.floor(100 + Math.random() * 900)}`;
-          } else {
-            body.id = `obj-${Date.now()}`;
-          }
-        }
-        if (!body.createdAt && !body.created_at) {
-          body.createdAt = new Date().toISOString().split('T')[0];
-        }
-        data = await model.create(body);
-        
-        // Custom logging trigger for Client Creation (mimic original server.ts)
+      const endpoint = collection === 'users_list' ? 'users' : collection;
+
+      if (!body.id && !Array.isArray(body)) {
         if (collection === 'clients') {
-          await AuditLogModel.create({
-            id: `log-${Date.now()}`,
-            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-            userId: 'usr-admin-master',
-            userName: 'Super Admin CG',
-            userEmail: 'admin@campanaganadora.ai',
-            clientId: body.id,
-            clientName: body.organizationName,
-            action: 'Cliente Creado',
-            category: 'Cliente',
-            details: `Creó nuevo cliente ${body.organizationName} con el plan ${body.planName || 'Básico'}.`,
-            ipAddress: '190.158.204.12',
-            result: 'Éxito',
-          });
+          body.id = `CLI-2026-${Math.floor(100 + Math.random() * 900)}`;
+        } else {
+          body.id = `obj-${Date.now()}`;
         }
-      } else {
-        // Bulk insert mapping (InsForge takes arrays)
-        data = await model.insertMany(body);
       }
-      
-      res.status(201).json(data);
+      if (!Array.isArray(body) && !body.createdAt && !body.created_at) {
+        body.createdAt = new Date().toISOString().split('T')[0];
+      }
+
+      if (isConnected) {
+        const model = getModelByCollectionName(collection);
+        let data;
+        if (!Array.isArray(body)) {
+          data = await model.create(body);
+          if (collection === 'clients') {
+            await AuditLogModel.create({
+              id: `log-${Date.now()}`,
+              timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+              userId: 'usr-admin-master',
+              userName: 'Super Admin CG',
+              userEmail: 'admin@campanaganadora.ai',
+              clientId: body.id,
+              clientName: body.organizationName,
+              action: 'Cliente Creado',
+              category: 'Cliente',
+              details: `Creó nuevo cliente ${body.organizationName} con el plan ${body.planName || 'Básico'}.`,
+              ipAddress: '190.158.204.12',
+              result: 'Éxito',
+            });
+          }
+        } else {
+          data = await model.insertMany(body);
+        }
+        return res.status(201).json(data);
+      } else {
+        if (!memoryDb[endpoint]) memoryDb[endpoint] = [];
+        if (!Array.isArray(body)) {
+          memoryDb[endpoint].push(body);
+          if (collection === 'clients') {
+            memoryDb.audit_logs.push({
+              id: `log-${Date.now()}`,
+              timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+              userId: 'usr-admin-master',
+              userName: 'Super Admin CG',
+              userEmail: 'admin@campanaganadora.ai',
+              clientId: body.id,
+              clientName: body.organizationName,
+              action: 'Cliente Creado',
+              category: 'Cliente',
+              details: `Creó nuevo cliente ${body.organizationName} con el plan ${body.planName || 'Básico'}.`,
+              ipAddress: '190.158.204.12',
+              result: 'Éxito',
+            });
+          }
+        } else {
+          memoryDb[endpoint].push(...body);
+        }
+        return res.status(201).json(body);
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -517,14 +698,26 @@ async function startServer() {
     try {
       const { collection } = req.params;
       const { field, value } = req.query;
-      const model = getModelByCollectionName(collection);
-      
+      const endpoint = collection === 'users_list' ? 'users' : collection;
+
       if (field && value) {
-        const result = await model.updateMany({ [field as string]: value }, req.body);
-        return res.json({ success: true, count: result.modifiedCount });
+        if (isConnected) {
+          const model = getModelByCollectionName(collection);
+          const result = await model.updateMany({ [field as string]: value }, req.body);
+          return res.json({ success: true, count: result.modifiedCount });
+        } else {
+          const items = memoryDb[endpoint] || [];
+          let count = 0;
+          items.forEach((item: any) => {
+            if (String(item[field as string]) === String(value)) {
+              Object.assign(item, req.body);
+              count++;
+            }
+          });
+          return res.json({ success: true, count });
+        }
       }
-      
-      res.status(400).json({ error: 'Missing field or value for bulk update' });
+      return res.status(400).json({ error: 'Missing field or value for bulk update' });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -534,10 +727,20 @@ async function startServer() {
   app.put('/api/:collection/:id', async (req, res) => {
     try {
       const { collection, id } = req.params;
-      const model = getModelByCollectionName(collection);
-      const data = await model.findOneAndUpdate({ id }, req.body, { new: true }).lean();
-      if (!data) return res.status(404).json({ error: 'Document not found' });
-      res.json(data);
+      const endpoint = collection === 'users_list' ? 'users' : collection;
+
+      if (isConnected) {
+        const model = getModelByCollectionName(collection);
+        const data = await model.findOneAndUpdate({ id }, req.body, { new: true }).lean();
+        if (!data) return res.status(404).json({ error: 'Document not found' });
+        return res.json(data);
+      } else {
+        const items = memoryDb[endpoint] || [];
+        const index = items.findIndex((x: any) => x.id === id);
+        if (index === -1) return res.status(404).json({ error: 'Document not found' });
+        items[index] = { ...items[index], ...req.body };
+        return res.json(items[index]);
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -548,13 +751,21 @@ async function startServer() {
     try {
       const { collection } = req.params;
       const { field, value } = req.query;
-      const model = getModelByCollectionName(collection);
-      
+      const endpoint = collection === 'users_list' ? 'users' : collection;
+
       if (field && value) {
-        const result = await model.deleteMany({ [field as string]: value });
-        return res.json({ success: true, count: result.deletedCount });
+        if (isConnected) {
+          const model = getModelByCollectionName(collection);
+          const result = await model.deleteMany({ [field as string]: value });
+          return res.json({ success: true, count: result.deletedCount });
+        } else {
+          const items = memoryDb[endpoint] || [];
+          const initialLength = items.length;
+          memoryDb[endpoint] = items.filter((item: any) => String(item[field as string]) !== String(value));
+          return res.json({ success: true, count: initialLength - memoryDb[endpoint].length });
+        }
       }
-      res.status(400).json({ error: 'Missing field or value for bulk delete' });
+      return res.status(400).json({ error: 'Missing field or value for bulk delete' });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -564,10 +775,20 @@ async function startServer() {
   app.delete('/api/:collection/:id', async (req, res) => {
     try {
       const { collection, id } = req.params;
-      const model = getModelByCollectionName(collection);
-      const result = await model.deleteOne({ id });
-      if (result.deletedCount === 0) return res.status(404).json({ error: 'Document not found' });
-      res.json({ success: true });
+      const endpoint = collection === 'users_list' ? 'users' : collection;
+
+      if (isConnected) {
+        const model = getModelByCollectionName(collection);
+        const result = await model.deleteOne({ id });
+        if (result.deletedCount === 0) return res.status(404).json({ error: 'Document not found' });
+        return res.json({ success: true });
+      } else {
+        const items = memoryDb[endpoint] || [];
+        const index = items.findIndex((x: any) => x.id === id);
+        if (index === -1) return res.status(404).json({ error: 'Document not found' });
+        items.splice(index, 1);
+        return res.json({ success: true });
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
