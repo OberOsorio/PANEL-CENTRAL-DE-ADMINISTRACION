@@ -134,7 +134,7 @@ export const UsersView: React.FC = () => {
     const newUser = addUser({
       firstName,
       lastName,
-      email,
+      email: email.trim().toLowerCase(),
       password: userPassword || 'Campaña2026!',
       phone,
       clientId,
@@ -151,7 +151,22 @@ export const UsersView: React.FC = () => {
     setLastName('');
     setEmail('');
     setPhone('');
+    setUserPassword('Campaña2026!');
+    setClientId(clients[0]?.id || '');
+    setRoleId(roles[1]?.id || '');
     setTimeout(() => setInvitationSuccessMsg(null), 5000);
+  };
+
+  const handleOpenNewUserModal = () => {
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setPhone('');
+    setUserPassword('Campaña2026!');
+    setClientId(clients[0]?.id || '');
+    setRoleId(roles[1]?.id || '');
+    setIsNewUserModalOpen(false); // Make sure it's closed before opening (optional)
+    setIsNewUserModalOpen(true);
   };
 
   return (
@@ -161,7 +176,7 @@ export const UsersView: React.FC = () => {
         <div />
 
         <button
-          onClick={() => setIsNewUserModalOpen(true)}
+          onClick={handleOpenNewUserModal}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-purple-600/30 hover:bg-purple-500 transition-all shrink-0"
         >
           <Plus className="h-4 w-4" />

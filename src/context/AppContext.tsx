@@ -751,7 +751,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
           id: newAdminUser.id,
           first_name: newAdminUser.firstName,
           last_name: newAdminUser.lastName,
-          email: newAdminUser.email,
+          email: adminUserEmail.trim().toLowerCase(),
           phone: newAdminUser.phone || null,
           client_id: newAdminUser.clientId,
           client_name: newAdminUser.clientName,
@@ -1130,8 +1130,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
   };
 
   const addUser = (userData: Omit<User, 'id' | 'createdAt' | 'lastAccessAt'>) => {
+    const normalizedEmail = userData.email.trim().toLowerCase();
     const newUser: User = {
       ...userData,
+      email: normalizedEmail,
       password: userData.password || 'Campaña2026!',
       id: `usr-${Date.now()}`,
       createdAt: new Date().toISOString().split('T')[0],
@@ -1139,27 +1141,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
     };
     setUsers((prev) => [newUser, ...prev]);
 
-    if (user) {
-      Promise.resolve(
-        insforge.database.from('users_list').insert([{
-          id: newUser.id,
-          first_name: newUser.firstName,
-          last_name: newUser.lastName,
-          email: newUser.email,
-          phone: newUser.phone || null,
-          client_id: newUser.clientId,
-          client_name: newUser.clientName,
-          campaign_id: newUser.campaignId || null,
-          campaign_name: newUser.campaignName || null,
-          role_id: newUser.roleId,
-          role_name: newUser.roleName,
-          status: newUser.status,
-          last_access_at: newUser.lastAccessAt,
-          created_at: newUser.createdAt,
-          user_id: user.id
-        }])
-      ).catch((err: any) => console.error('Error writing user to InsForge:', err));
-    }
+    // Always persist to users_list table for campaign login authorization
+    Promise.resolve(
+      insforge.database.from('users_list').insert([{
+        id: newUser.id,
+        first_name: newUser.firstName,
+        last_name: newUser.lastName,
+        email: normalizedEmail,
+        phone: newUser.phone || null,
+        client_id: newUser.clientId,
+        client_name: newUser.clientName,
+        campaign_id: newUser.campaignId || null,
+        campaign_name: newUser.campaignName || null,
+        role_id: newUser.roleId,
+        role_name: newUser.roleName,
+        status: newUser.status,
+        last_access_at: newUser.lastAccessAt,
+        created_at: newUser.createdAt,
+        user_id: user?.id || newUser.id
+      }])
+    ).catch((err: any) => console.error('Error writing user to InsForge:', err));
 
     addAuditLog('Usuario Creado', 'Usuario', `Creó usuario ${newUser.email} para ${newUser.clientName}.`, newUser.clientId, newUser.clientName);
     return newUser;

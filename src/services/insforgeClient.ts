@@ -7,17 +7,45 @@ export const insforge = {
       
       return {
         select(fields: string = '*') {
-          return (async () => {
+          let filters: Array<{ field: string; value: any }> = [];
+          
+          const execute = async () => {
             try {
               const res = await fetch(`/api/${endpoint}`);
               if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-              const data = await res.json();
+              let data = await res.json();
+              
+              if (Array.isArray(data)) {
+                filters.forEach(f => {
+                  if (f.field === 'email') {
+                    data = data.filter((item: any) => 
+                      item.email && String(item.email).trim().toLowerCase() === String(f.value).trim().toLowerCase()
+                    );
+                  } else {
+                    data = data.filter((item: any) => String(item[f.field]) === String(f.value));
+                  }
+                });
+              }
+              
               return { data, error: null };
             } catch (error: any) {
               console.error(`Error in select for ${table}:`, error);
               return { data: null, error };
             }
-          })();
+          };
+
+          return {
+            eq(field: string, value: any) {
+              filters.push({ field, value });
+              return this;
+            },
+            then(onfulfilled?: (value: any) => any, onrejected?: (reason: any) => any) {
+              return execute().then(onfulfilled, onrejected);
+            },
+            catch(onrejected?: (reason: any) => any) {
+              return execute().catch(onrejected);
+            }
+          };
         },
         
         insert(records: any[]) {

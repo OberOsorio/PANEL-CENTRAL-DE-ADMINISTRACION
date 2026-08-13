@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   X,
@@ -145,6 +145,66 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   // Validation errors state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Step 2: Responsible Admin Info & Password
+  const [adminPassword, setAdminPassword] = useState('Campaña2026!');
+  const [confirmPassword, setConfirmPassword] = useState('Campaña2026!');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Step 3: Plan Selection
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan-pro');
+
+  // Step 4: License configuration
+  const [licenseType, setLicenseType] = useState<string>('Anual');
+
+  // Step 5: Duration in months or demo days
+  const [durationMonths, setDurationMonths] = useState<number>(12);
+  const [demoDurationDays, setDemoDurationDays] = useState<number>(3);
+
+  // Step 6: Limits & Modules
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[1];
+  const [enabledModules, setEnabledModules] = useState<string[]>(selectedPlan.allowedModuleCodes);
+
+  const resetWizard = useCallback(() => {
+    setStep(1);
+    setOrganizationName('');
+    setTaxId('');
+    setCountry('Colombia');
+    setAspiration('Alcaldía');
+    setDepartment('');
+    setCity('');
+    setPhone('');
+    setEmail('');
+    setNotes('');
+    setErrors({});
+    setAdminPassword('Campaña2026!');
+    setConfirmPassword('Campaña2026!');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setSelectedPlanId('plan-pro');
+    setLicenseType('Anual');
+    setDurationMonths(12);
+    setDemoDurationDays(3);
+
+    const defaultPlan = plans.find((p) => p.id === 'plan-pro') || plans[1] || plans[0];
+    if (defaultPlan) {
+      setEnabledModules(defaultPlan.allowedModuleCodes || []);
+    } else {
+      setEnabledModules([]);
+    }
+  }, [plans]);
+
+  useEffect(() => {
+    if (isOpen) {
+      resetWizard();
+    }
+  }, [isOpen, resetWizard]);
+
+  const handleClose = () => {
+    resetWizard();
+    onClose();
+  };
+
   const validateStep1 = () => {
     const errs: Record<string, string> = {};
     
@@ -154,7 +214,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
       errs.organizationName = 'Debe tener al menos 3 caracteres.';
     }
     
-    // Identification / NIT regex allowing numbers, hyphens, dots
     const nitRegex = /^\d[\d.,-]*\d$/;
     if (!taxId.trim()) {
       errs.taxId = 'El número de cédula es obligatorio.';
@@ -171,7 +230,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
       errs.email = 'Formato de correo electrónico no válido.';
     }
     
-    // Phone regex
     const phoneRegex = /^\+?[\d\s-]{7,15}$/;
     if (!phone.trim()) {
       errs.phone = 'El teléfono de contacto es obligatorio.';
@@ -244,13 +302,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     setStep(step + 1);
   };
 
-  // Step 2: Responsible Admin Info & Password
-  const [adminPassword, setAdminPassword] = useState('Campaña2026!');
-  const [confirmPassword, setConfirmPassword] = useState('Campaña2026!');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Auto-generate strong password
   const handleGeneratePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
     let newPass = 'CG2026!';
@@ -261,20 +312,6 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     setConfirmPassword(newPass);
     setShowPassword(true);
   };
-
-  // Step 3: Plan Selection
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan-pro');
-
-  // Step 4: License configuration
-  const [licenseType, setLicenseType] = useState<string>('Anual');
-
-  // Step 5: Duration in months or demo days
-  const [durationMonths, setDurationMonths] = useState<number>(12);
-  const [demoDurationDays, setDemoDurationDays] = useState<number>(3);
-
-  // Step 6: Limits & Modules
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[1];
-  const [enabledModules, setEnabledModules] = useState<string[]>(selectedPlan.allowedModuleCodes);
 
   if (!isOpen) return null;
 
@@ -322,6 +359,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
       demoDurationDays,
       adminPassword
     );
+    resetWizard();
     onClose();
   };
 
@@ -337,7 +375,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
 
   return (
     <div
-      onClick={onClose}
+      onClick={handleClose}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in overflow-y-auto"
     >
       <div
@@ -345,7 +383,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
         className="relative w-full max-w-6xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-4"
       >
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute right-4 top-4 z-10 rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800"
         >
           <X className="h-5 w-5" />

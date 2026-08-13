@@ -367,7 +367,7 @@ export const ClientsView: React.FC = () => {
       </div>
 
       {/* New Client Onboarding Wizard */}
-      <NewClientWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
+      <NewClientWizard key={isWizardOpen ? 'open-wizard' : 'closed-wizard'} isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
 
       {/* Client Full Detail Drawer / Modal */}
       <ClientDetailModal
