@@ -143,8 +143,13 @@ export const SettingsView: React.FC = () => {
         <div className="flex items-center justify-between pt-2">
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               if (confirm('¿Estás seguro de reiniciar todo el sistema a cero? Se borrarán todos los datos cargados.')) {
+                try {
+                  await fetch('/api/reset', { method: 'POST' });
+                } catch (e) {
+                  console.warn('API reset failed or offline:', e);
+                }
                 localStorage.removeItem('cg_clients');
                 localStorage.removeItem('cg_licenses');
                 localStorage.removeItem('cg_subscriptions');

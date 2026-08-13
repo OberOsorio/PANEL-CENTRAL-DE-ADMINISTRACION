@@ -534,6 +534,36 @@ async function startServer() {
     }
   });
 
+  app.post('/api/reset', async (req, res) => {
+    try {
+      if (isConnected) {
+        await Promise.all([
+          ClientModel.deleteMany({}),
+          LicenseModel.deleteMany({}),
+          SubscriptionModel.deleteMany({}),
+          UserModel.deleteMany({}),
+          CampaignModel.deleteMany({}),
+          InvoiceModel.deleteMany({}),
+          AuditLogModel.deleteMany({}),
+          NotificationModel.deleteMany({}),
+        ]);
+      }
+      memoryDb.clients = [];
+      memoryDb.licenses = [];
+      memoryDb.subscriptions = [];
+      memoryDb.users = [];
+      memoryDb.campaigns = [];
+      memoryDb.invoices = [];
+      memoryDb.audit_logs = [];
+      memoryDb.notifications = [];
+      memoryDb.sessions = [];
+
+      res.json({ success: true, message: 'All database collections and local stores wiped successfully.' });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ==========================================
   // SIMULATED RPC GATEWAY
   // ==========================================
