@@ -70,8 +70,12 @@ async function startServer() {
   } else {
     console.log(`Connecting to MongoDB at: ${mongoUri.replace(/:([^@]+)@/, ':****@')}`); // Hide credentials in log
   }
-  await connectDB(mongoUri);
-  await seedDatabase();
+  const isConnected = await connectDB(mongoUri);
+  if (isConnected) {
+    await seedDatabase();
+  } else {
+    console.warn('⚠️ WARNING: Skipping database seeding because MongoDB connection failed. Database operations will not work until a connection is established.');
+  }
 
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;

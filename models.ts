@@ -14,13 +14,14 @@ import {
   INITIAL_NOTIFICATIONS,
 } from './src/data/initialData.js';
 
-// Connection function
-export async function connectDB(uri: string) {
+export async function connectDB(uri: string): Promise<boolean> {
   try {
     await mongoose.connect(uri);
     console.log('✅ Connected to MongoDB successfully.');
+    return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
+    return false;
   }
 }
 
