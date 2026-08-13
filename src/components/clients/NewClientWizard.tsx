@@ -334,33 +334,37 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     }
   };
 
-  const handleCompleteWizard = () => {
-    addClientWithLicense(
-      {
-        organizationName,
-        responsibleName: organizationName || 'Administrador',
-        taxId,
+  const handleCompleteWizard = async () => {
+    try {
+      await addClientWithLicense(
+        {
+          organizationName,
+          responsibleName: organizationName || 'Administrador',
+          taxId,
+          email,
+          phone,
+          country,
+          department,
+          city: (aspiration === 'Gobernación' || aspiration === 'Asamblea') ? '' : city,
+          aspiration,
+          planId: selectedPlan.id,
+          planName: selectedPlan.name,
+          maxUsersAllowed: selectedPlan.maxUsers,
+          notes,
+        },
+        durationMonths,
+        enabledModules,
         email,
-        phone,
-        country,
-        department,
-        city: (aspiration === 'Gobernación' || aspiration === 'Asamblea') ? '' : city,
-        aspiration,
-        planId: selectedPlan.id,
-        planName: selectedPlan.name,
-        maxUsersAllowed: selectedPlan.maxUsers,
-        notes,
-      },
-      durationMonths,
-      enabledModules,
-      email,
-      organizationName || 'Admin',
-      licenseType,
-      demoDurationDays,
-      adminPassword
-    );
-    resetWizard();
-    onClose();
+        organizationName || 'Admin',
+        licenseType,
+        demoDurationDays,
+        adminPassword
+      );
+      resetWizard();
+      onClose();
+    } catch (err) {
+      console.error('Error al crear el cliente:', err);
+    }
   };
 
   const stepsHeader = [
