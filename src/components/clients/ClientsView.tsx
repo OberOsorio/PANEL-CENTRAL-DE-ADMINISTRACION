@@ -22,6 +22,7 @@ import {
   X,
   ChevronDown,
   Check,
+  ExternalLink,
 } from 'lucide-react';
 import { COLOMBIA_DEPARTMENTS } from '../../data/colombiaData';
 
@@ -331,6 +332,17 @@ export const ClientsView: React.FC = () => {
                             Alerta Demo
                           </button>
                         )}
+                        <button
+                          onClick={() => {
+                            const fusionUrl = (import.meta as any).env?.VITE_FUSION_URL || 'http://localhost:5173';
+                            window.open(`${fusionUrl}/?campaign=${encodeURIComponent(client.organizationName)}&email=${encodeURIComponent(client.email)}`, '_blank');
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm transition-all"
+                          title="Abrir software de Campaña Ganadora para este cliente"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5 text-white" />
+                          Abrir Software
+                        </button>
                         <button
                           onClick={() => setSelectedClientForDetail(client)}
                           className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"

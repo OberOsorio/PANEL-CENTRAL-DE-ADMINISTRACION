@@ -19,6 +19,7 @@ import {
   EyeOff,
   Copy,
   ChevronDown,
+  ExternalLink,
 } from 'lucide-react';
 
 interface ClientDetailModalProps {
@@ -113,12 +114,24 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                const fusionUrl = (import.meta as any).env?.VITE_FUSION_URL || 'http://localhost:5173';
+                window.open(`${fusionUrl}/?campaign=${encodeURIComponent(client.organizationName)}&email=${encodeURIComponent(client.email)}`, '_blank');
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-purple-600/30 transition-all"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Abrir Software Campaña
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Section Tabs Bar */}
