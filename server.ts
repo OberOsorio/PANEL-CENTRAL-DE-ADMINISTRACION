@@ -27,9 +27,6 @@ import { AccessCheckResult } from './src/types.js';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Helper to parse cookies from requests
 const parseCookies = (req: any) => {
   const list: any = {};
@@ -73,7 +70,7 @@ async function startServer() {
   await seedDatabase();
 
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(express.json());
 
@@ -355,7 +352,7 @@ async function startServer() {
           status: license.status,
         },
         enabledModules: license.enabledModuleCodes,
-        redirectUrl: 'http://localhost:3001/',
+        redirectUrl: 'https://fusionsoftware.netlify.app/',
       };
 
       return res.json(allowedResponse);

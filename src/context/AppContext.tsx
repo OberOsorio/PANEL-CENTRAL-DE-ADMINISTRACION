@@ -1334,7 +1334,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user?: any }> = 
       clientInfo: { name: client.organizationName, status: client.status, plan: client.planName },
       licenseInfo: { id: license.id, expiresAt: license.expiresAt, type: license.licenseType, status: license.status },
       enabledModules: license.enabledModuleCodes,
-      redirectUrl: 'http://localhost:3001/',
+      redirectUrl: 'https://fusionsoftware.netlify.app/',
     };
   };
 

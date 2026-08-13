@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: panel-admin-central
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        value: "" # MongoDB connection string (e.g. from MongoDB Atlas)
+      - key: VITE_SUPABASE_URL
+        value: "https://ojvrlleziqrimhjvsbwf.supabase.co"
+      - key: VITE_SUPABASE_ANON_KEY
+        value: "sb_publishable_mI1eBd8nNRGv9uIICgOU-w_2weLI9lp"
