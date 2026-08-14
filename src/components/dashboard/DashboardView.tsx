@@ -38,7 +38,7 @@ import {
 
 // Data for charts matching the screenshot
 export const DashboardView: React.FC = () => {
-  const { setCurrentView, addAuditLog, clients, users, subscriptions, invoices } = useApp();
+  const { setCurrentView, addAuditLog, clients, users, subscriptions, invoices, campaigns } = useApp();
   const [periodFilter, setPeriodFilter] = useState('Todo el periodo');
   const [activeModal, setActiveModal] = useState<
     'total_users' | 'active_users' | 'new_registers' | 'subscriptions' | 'storage' | null
@@ -83,7 +83,8 @@ export const DashboardView: React.FC = () => {
     }
   });
 
-  const totalStorageUsedNum = Number((clients.length * 1.2 + campaigns.length * 0.8).toFixed(1));
+  const campaignsList = Array.isArray(campaigns) ? campaigns : [];
+  const totalStorageUsedNum = Number((clients.length * 1.2 + campaignsList.length * 0.8).toFixed(1));
   const totalStorageUsed = totalStorageUsedNum.toFixed(1);
   const actasStorage = (totalStorageUsedNum * 0.6).toFixed(1);
   const auditStorage = (totalStorageUsedNum * 0.2).toFixed(1);
