@@ -10,14 +10,20 @@ export const CampaignsView: React.FC = () => {
   const [selectedElectionType, setSelectedElectionType] = useState('TODOS');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  const electionTypes = ['TODOS', ...Array.from(new Set(campaigns.map((c) => c.electionType)))];
+  const electionTypes = ['TODOS', ...Array.from(new Set((Array.isArray(campaigns) ? campaigns : []).map((c) => c.electionType || '')))];
 
-  const filteredCampaigns = campaigns.filter((c) => {
+  const filteredCampaigns = (Array.isArray(campaigns) ? campaigns : []).filter((c) => {
+    if (!c) return false;
+    const name = c.name || '';
+    const clientName = c.clientName || '';
+    const candidateName = c.candidateName || '';
+    const territory = c.territory || '';
+
     const matchesSearch =
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.territory.toLowerCase().includes(searchQuery.toLowerCase());
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      candidateName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      territory.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = selectedStatus === 'TODOS' || c.status === selectedStatus;
     const matchesType = selectedElectionType === 'TODOS' || c.electionType === selectedElectionType;

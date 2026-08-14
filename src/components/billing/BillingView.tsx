@@ -9,11 +9,16 @@ export const BillingView: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('TODOS');
   const [selectedCertificateInvoice, setSelectedCertificateInvoice] = useState<Invoice | null>(null);
 
-  const filteredInvoices = invoices.filter((i) => {
+  const filteredInvoices = (Array.isArray(invoices) ? invoices : []).filter((i) => {
+    if (!i) return false;
+    const clientName = i.clientName || '';
+    const id = i.id || '';
+    const description = i.description || '';
+
     const matchesSearch =
-      i.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      i.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      i.description.toLowerCase().includes(searchQuery.toLowerCase());
+      clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      description.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = selectedStatus === 'TODOS' || i.status === selectedStatus;
 

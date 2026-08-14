@@ -198,12 +198,18 @@ export const ClientsView: React.FC = () => {
     }
   };
 
-  const filteredClients = clients.filter((c) => {
+  const filteredClients = (Array.isArray(clients) ? clients : []).filter((c) => {
+    if (!c) return false;
+    const orgName = c.organizationName || '';
+    const respName = c.responsibleName || '';
+    const taxId = c.taxId || '';
+    const city = c.city || '';
+
     const matchesSearch =
-      c.organizationName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.responsibleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.taxId.includes(searchQuery) ||
-      c.city.toLowerCase().includes(searchQuery.toLowerCase());
+      orgName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      respName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      taxId.includes(searchQuery) ||
+      city.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = selectedStatus === 'TODOS' || c.status === selectedStatus;
 

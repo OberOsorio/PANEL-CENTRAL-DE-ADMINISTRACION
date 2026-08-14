@@ -74,11 +74,16 @@ export const UsersView: React.FC = () => {
 
   const [invitationSuccessMsg, setInvitationSuccessMsg] = useState<string | null>(null);
 
-  const filteredUsers = users.filter((u) => {
+  const filteredUsers = (Array.isArray(users) ? users : []).filter((u) => {
+    if (!u) return false;
+    const fullName = `${u.firstName || ''} ${u.lastName || ''}`;
+    const email = u.email || '';
+    const clientName = u.clientName || '';
+
     const matchesSearch =
-      `${u.firstName} ${u.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.clientName.toLowerCase().includes(searchQuery.toLowerCase());
+      fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      clientName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesRole = selectedRole === 'TODOS' || u.roleName === selectedRole;
 

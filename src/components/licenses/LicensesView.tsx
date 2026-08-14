@@ -24,11 +24,16 @@ export const LicensesView: React.FC = () => {
   const [editingLicenseForModules, setEditingLicenseForModules] = useState<License | null>(null);
   const [activeRenewDropdownId, setActiveRenewDropdownId] = useState<string | null>(null);
 
-  const filteredLicenses = licenses.filter((l) => {
+  const filteredLicenses = (Array.isArray(licenses) ? licenses : []).filter((l) => {
+    if (!l) return false;
+    const clientName = l.clientName || '';
+    const id = l.id || '';
+    const licenseKey = l.licenseKey || '';
+
     const matchesSearch =
-      l.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.licenseKey.toLowerCase().includes(searchQuery.toLowerCase());
+      clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      licenseKey.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = selectedStatus === 'TODOS' || l.status === selectedStatus;
 

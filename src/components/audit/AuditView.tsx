@@ -7,12 +7,18 @@ export const AuditView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('TODOS');
 
-  const filteredLogs = auditLogs.filter((l) => {
+  const filteredLogs = (Array.isArray(auditLogs) ? auditLogs : []).filter((l) => {
+    if (!l) return false;
+    const action = l.action || '';
+    const userName = l.userName || '';
+    const clientName = l.clientName || '';
+    const details = l.details || '';
+
     const matchesSearch =
-      l.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (l.clientName && l.clientName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      l.details.toLowerCase().includes(searchQuery.toLowerCase());
+      action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      details.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCat = selectedCategory === 'TODOS' || l.category === selectedCategory;
 
