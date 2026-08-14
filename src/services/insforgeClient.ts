@@ -202,21 +202,25 @@ export const insforge = {
           
           const execute = async () => {
             let data: any[] = [];
+            let apiSuccess = false;
             try {
               const apiData = await safeFetch(endpoint);
               if (Array.isArray(apiData)) {
                 data = apiData;
+                apiSuccess = true;
               }
             } catch (error) {}
 
             if (table === 'users_list' || table === 'users' || endpoint === 'users') {
-              const localUsers = getNormalizedLocalUsers();
-              const existingEmails = new Set(data.map(u => (u.email || '').trim().toLowerCase()));
-              localUsers.forEach(lu => {
-                if (!existingEmails.has(lu.email)) {
-                  data.push(lu);
-                }
-              });
+              if (!apiSuccess) {
+                const localUsers = getNormalizedLocalUsers();
+                const existingEmails = new Set(data.map(u => (u.email || '').trim().toLowerCase()));
+                localUsers.forEach(lu => {
+                  if (!existingEmails.has(lu.email)) {
+                    data.push(lu);
+                  }
+                });
+              }
             } else if (data.length === 0) {
               const saved = localStorage.getItem(`cg_${endpoint}`);
               if (saved) {
