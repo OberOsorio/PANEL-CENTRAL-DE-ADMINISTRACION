@@ -129,6 +129,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClose }) => {
   const { plans, modules, addClientWithLicense } = useApp();
 
+  const plansList = Array.isArray(plans) ? plans : [];
+  const modulesList = Array.isArray(modules) ? modules : [];
+  const departmentsList = Array.isArray(COLOMBIA_DEPARTMENTS) ? COLOMBIA_DEPARTMENTS : [];
+
   const [step, setStep] = useState<number>(1);
 
   // Step 1: Organization Info
@@ -162,7 +166,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
   const [demoDurationDays, setDemoDurationDays] = useState<number>(3);
 
   // Step 6: Limits & Modules
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[1] || plans[0] || { id: 'plan-pro', name: 'Plan Profesional', maxUsers: 10, allowedModuleCodes: [] };
+  const selectedPlan = plansList.find((p) => p.id === selectedPlanId) || plansList[1] || plansList[0] || { id: 'plan-pro', name: 'Plan Profesional', maxUsers: 10, allowedModuleCodes: [] };
   const [enabledModules, setEnabledModules] = useState<string[]>(selectedPlan?.allowedModuleCodes || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -188,13 +192,13 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
     setDemoDurationDays(3);
     setIsSubmitting(false);
 
-    const defaultPlan = plans.find((p) => p.id === 'plan-pro') || plans[1] || plans[0];
+    const defaultPlan = plansList.find((p) => p.id === 'plan-pro') || plansList[1] || plansList[0];
     if (defaultPlan) {
       setEnabledModules(defaultPlan.allowedModuleCodes || []);
     } else {
       setEnabledModules([]);
     }
-  }, [plans]);
+  }, [plansList]);
 
   useEffect(() => {
     if (isOpen) {
@@ -327,7 +331,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
-    const p = plans.find((pl) => pl.id === planId);
+    const p = plansList.find((pl) => pl.id === planId);
     if (p) {
       setEnabledModules(p.allowedModuleCodes);
       if (p.code === 'DEMO') {
@@ -572,7 +576,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 <SearchableDropdown
                   label="Departamento / Estado *"
                   placeholder="Selecciona un departamento"
-                  options={COLOMBIA_DEPARTMENTS.map((d) => d.name)}
+                  options={departmentsList.map((d) => d.name)}
                   value={department}
                   onChange={(val) => {
                     setDepartment(val);
@@ -587,7 +591,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                     label="Municipio / Ciudad *"
                     placeholder={department ? "Selecciona un municipio" : "Selecciona primero un departamento"}
                     options={
-                      COLOMBIA_DEPARTMENTS.find((d) => d.name === department)?.municipalities || []
+                      departmentsList.find((d) => d.name === department)?.municipalities || []
                     }
                     value={city}
                     onChange={(val) => {
@@ -773,7 +777,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 PASO 3: Selección del Plan Comercial
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {plans.map((p) => {
+                {plansList.map((p) => {
                   const isSelected = selectedPlanId === p.id;
                   return (
                     <div
@@ -923,7 +927,7 @@ export const NewClientWizard: React.FC<NewClientWizardProps> = ({ isOpen, onClos
                 Los módulos seleccionados estarán disponibles para este cliente en el Software Electoral.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-52 overflow-y-auto pr-1">
-                {modules.map((m) => {
+                {modulesList.map((m) => {
                   const isChecked = enabledModules.includes(m.code);
                   return (
                     <div
