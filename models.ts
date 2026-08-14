@@ -282,32 +282,70 @@ export const SessionModel = mongoose.model('Session', SessionSchema);
 // Database Seeder
 export async function seedDatabase() {
   try {
+    console.log('🌱 Checking MongoDB database collections for seeding...');
+    
+    // Seed plans
+    const planCount = await PlanModel.countDocuments();
+    if (planCount === 0 && INITIAL_PLANS.length > 0) {
+      console.log('🌱 Seeding plans...');
+      await PlanModel.insertMany(INITIAL_PLANS);
+    }
+    
+    // Seed modules
+    const moduleCount = await ModuleModel.countDocuments();
+    if (moduleCount === 0 && INITIAL_MODULES.length > 0) {
+      console.log('🌱 Seeding modules...');
+      await ModuleModel.insertMany(INITIAL_MODULES);
+    }
+    
+    // Seed roles
+    const roleCount = await RoleModel.countDocuments();
+    if (roleCount === 0 && INITIAL_ROLES.length > 0) {
+      console.log('🌱 Seeding roles...');
+      await RoleModel.insertMany(INITIAL_ROLES);
+    }
+
+    // Seed clients
     const clientCount = await ClientModel.countDocuments();
-    if (clientCount === 0) {
-      console.log('🌱 Database is empty. Seeding initial data from initialData.ts...');
-      
-      // Seed clients
+    if (clientCount === 0 && INITIAL_CLIENTS.length > 0) {
+      console.log('🌱 Seeding clients...');
       await ClientModel.insertMany(INITIAL_CLIENTS);
-      
-      // Seed licenses
+    }
+    
+    // Seed licenses
+    const licenseCount = await LicenseModel.countDocuments();
+    if (licenseCount === 0 && INITIAL_LICENSES.length > 0) {
+      console.log('🌱 Seeding licenses...');
       const mappedLicenses = INITIAL_LICENSES.map((l: any) => ({
         ...l,
         enabledModuleCodes: l.enabledModuleCodes || []
       }));
       await LicenseModel.insertMany(mappedLicenses);
-      
-      // Seed subscriptions
+    }
+    
+    // Seed subscriptions
+    const subCount = await SubscriptionModel.countDocuments();
+    if (subCount === 0 && INITIAL_SUBSCRIPTIONS.length > 0) {
+      console.log('🌱 Seeding subscriptions...');
       await SubscriptionModel.insertMany(INITIAL_SUBSCRIPTIONS);
-      
-      // Seed users (with hashed default password "password")
+    }
+    
+    // Seed users (with hashed default password "password")
+    const userCount = await UserModel.countDocuments();
+    if (userCount === 0 && INITIAL_USERS.length > 0) {
+      console.log('🌱 Seeding users...');
       const hashedDefaultPassword = hashPassword('password');
       const mappedUsers = INITIAL_USERS.map((u: any) => ({
         ...u,
         password: hashedDefaultPassword
       }));
       await UserModel.insertMany(mappedUsers);
-      
-      // Seed campaigns
+    }
+    
+    // Seed campaigns
+    const campaignCount = await CampaignModel.countDocuments();
+    if (campaignCount === 0 && INITIAL_CAMPAIGNS.length > 0) {
+      console.log('🌱 Seeding campaigns...');
       const mappedCampaigns = INITIAL_CAMPAIGNS.map((c: any) => ({
         id: c.id,
         clientId: c.clientId,
@@ -324,8 +362,12 @@ export async function seedDatabase() {
         logoUrl: c.logoUrl
       }));
       await CampaignModel.insertMany(mappedCampaigns);
-      
-      // Seed invoices
+    }
+    
+    // Seed invoices
+    const invoiceCount = await InvoiceModel.countDocuments();
+    if (invoiceCount === 0 && INITIAL_INVOICES.length > 0) {
+      console.log('🌱 Seeding invoices...');
       const mappedInvoices = INITIAL_INVOICES.map((i: any) => ({
         id: i.id,
         clientId: i.clientId,
@@ -340,26 +382,23 @@ export async function seedDatabase() {
         status: i.status
       }));
       await InvoiceModel.insertMany(mappedInvoices);
-      
-      // Seed audit logs
-      await AuditLogModel.insertMany(INITIAL_AUDIT_LOGS);
-      
-      // Seed notifications
-      await NotificationModel.insertMany(INITIAL_NOTIFICATIONS);
-      
-      // Seed plans
-      await PlanModel.insertMany(INITIAL_PLANS);
-      
-      // Seed modules
-      await ModuleModel.insertMany(INITIAL_MODULES);
-      
-      // Seed roles
-      await RoleModel.insertMany(INITIAL_ROLES);
-      
-      console.log('🌱 MongoDB seeding completed successfully!');
-    } else {
-      console.log('📂 MongoDB database already contains data. Skipping seeding.');
     }
+    
+    // Seed audit logs
+    const auditCount = await AuditLogModel.countDocuments();
+    if (auditCount === 0 && INITIAL_AUDIT_LOGS.length > 0) {
+      console.log('🌱 Seeding audit logs...');
+      await AuditLogModel.insertMany(INITIAL_AUDIT_LOGS);
+    }
+    
+    // Seed notifications
+    const notifCount = await NotificationModel.countDocuments();
+    if (notifCount === 0 && INITIAL_NOTIFICATIONS.length > 0) {
+      console.log('🌱 Seeding notifications...');
+      await NotificationModel.insertMany(INITIAL_NOTIFICATIONS);
+    }
+    
+    console.log('🌱 MongoDB seeding check completed successfully!');
   } catch (error) {
     console.error('❌ Error seeding MongoDB:', error);
   }
