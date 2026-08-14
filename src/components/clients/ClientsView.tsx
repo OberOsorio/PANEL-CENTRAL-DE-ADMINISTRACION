@@ -340,7 +340,7 @@ export const ClientsView: React.FC = () => {
                         )}
                         <button
                           onClick={() => {
-                            const fusionUrl = (import.meta as any).env?.VITE_FUSION_URL || 'http://localhost:5173';
+                            const fusionUrl = (import.meta as any).env?.VITE_FUSION_URL || 'https://software-electoral-1me8.onrender.com';
                             window.open(`${fusionUrl}/?campaign=${encodeURIComponent(client.organizationName)}&email=${encodeURIComponent(client.email)}`, '_blank');
                           }}
                           className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm transition-all"

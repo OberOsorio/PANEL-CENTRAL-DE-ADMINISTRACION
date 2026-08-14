@@ -117,7 +117,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
-                const fusionUrl = (import.meta as any).env?.VITE_FUSION_URL || 'http://localhost:5173';
+                const fusionUrl = (import.meta as any).env?.VITE_FUSION_URL || 'https://software-electoral-1me8.onrender.com';
                 window.open(`${fusionUrl}/?campaign=${encodeURIComponent(client.organizationName)}&email=${encodeURIComponent(client.email)}`, '_blank');
               }}
               className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-purple-600/30 transition-all"
